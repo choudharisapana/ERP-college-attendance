@@ -1,0 +1,283 @@
+@import "tailwindcss";
+/* FORCE DARK MODE BACKGROUND */
+html.dark {
+  background-color: #111827 !important;
+}
+
+html.dark body {
+  background-color: #111827 !important;
+  color: #f3f4f6 !important;
+}
+
+html:not(.dark) {
+  background-color: #f9fafb !important;
+}
+
+html:not(.dark) body {
+  background-color: #f9fafb !important;
+  color: #111827 !important;
+}
+
+/* Ensure root div also gets background */
+#root {
+  min-height: 100vh;
+  background-color: inherit;
+}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Base styles */
+:root {
+  --bg-primary: #f9fafb;
+  --bg-secondary: #ffffff;
+  --text-primary: #111827;
+  --text-secondary: #4b5563;
+  --border-color: #e5e7eb;
+}
+
+/* Dark mode styles - MUST BE AFTER tailwind */
+.dark {
+  --bg-primary: #111827;
+  --bg-secondary: #1f2937;
+  --text-primary: #f3f4f6;
+  --text-secondary: #9ca3af;
+  --border-color: #374151;
+}
+
+/* Apply variables */
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Force background on all elements */
+.dark body {
+  background-color: #111827 !important;
+  color: #f3f4f6 !important;
+}
+
+body:not(.dark) {
+  background-color: #f9fafb !important;
+  color: #111827 !important;
+}
+
+/* Ensure all containers inherit */
+/* div, section, main, article {
+  background-color: inherit;
+} */
+
+/* Card styles */
+.bg-white {
+  background-color: #ffffff !important;
+}
+
+.dark .bg-white {
+  background-color: #1f2937 !important;
+}
+
+.bg-gray-50 {
+  background-color: #f9fafb !important;
+}
+
+.dark .bg-gray-50 {
+  background-color: #111827 !important;
+}
+
+.bg-gray-100 {
+  background-color: #f3f4f6 !important;
+}
+
+.dark .bg-gray-100 {
+  background-color: #1f2937 !important;
+}
+
+/* Text colors */
+.text-gray-900 {
+  color: #111827 !important;
+}
+
+.dark .text-gray-900 {
+  color: #f3f4f6 !important;
+}
+
+.text-gray-600 {
+  color: #4b5563 !important;
+}
+
+.dark .text-gray-600 {
+  color: #9ca3af !important;
+}
+
+.text-gray-500 {
+  color: #6b7280 !important;
+}
+
+.dark .text-gray-500 {
+  color: #9ca3af !important;
+}
+
+/* Border colors */
+.border-gray-100 {
+  border-color: #f3f4f6 !important;
+}
+
+.dark .border-gray-100 {
+  border-color: #374151 !important;
+}
+
+.border-gray-200 {
+  border-color: #e5e7eb !important;
+}
+
+.dark .border-gray-200 {
+  border-color: #374151 !important;
+}
+
+/* Input fields */
+input, select, textarea {
+  background-color: #ffffff !important;
+  color: #111827 !important;
+  border-color: #e5e7eb !important;
+}
+
+.dark input, 
+.dark select, 
+.dark textarea {
+  background-color: #1f2937 !important;
+  color: #f3f4f6 !important;
+  border-color: #374151 !important;
+}
+
+/* Buttons */
+button {
+  transition: all 0.3s ease;
+}
+
+/* Smooth transitions */
+* {
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+/* Compact view */
+.compact-view .p-4,
+.compact-view .p-5,
+.compact-view .p-6 {
+  padding: 0.75rem !important;
+}
+
+.compact-view .mb-4,
+.compact-view .mb-5,
+.compact-view .mb-6 {
+  margin-bottom: 0.75rem !important;
+}
+
+.compact-view .gap-4,
+.compact-view .gap-5,
+.compact-view .gap-6 {
+  gap: 0.75rem !important;
+}
+
+/* Home component exceptions - override karo */
+.home-page .bg-white {
+  background-color: #ffffff !important;
+}
+
+.dark .home-page .bg-white {
+  background-color: #1f2937 !important;
+}
+
+.home-page .text-gray-900 {
+  color: #111827 !important;
+}
+
+.dark .home-page .text-gray-900 {
+  color: #f3f4f6 !important;
+}
+
+/* Home component exceptions - Override for Home page only */
+.home-page .bg-white {
+  background-color: #ffffff !important;
+}
+
+.dark .home-page .bg-white {
+  background-color: #1f2937 !important;
+}
+
+.home-page .text-gray-900 {
+  color: #111827 !important;
+}
+
+.dark .home-page .text-gray-900 {
+  color: #f3f4f6 !important;
+}
+
+/* Additional Home page overrides */
+.home-page .text-gray-600 {
+  color: #4b5563 !important;
+}
+
+.dark .home-page .text-gray-600 {
+  color: #9ca3af !important;
+}
+
+.home-page .border-gray-200 {
+  border-color: #e5e7eb !important;
+}
+
+.dark .home-page .border-gray-200 {
+  border-color: #374151 !important;
+}
+
+.home-page .bg-blue-100 {
+  background-color: #dbeafe !important;
+}
+
+.dark .home-page .bg-blue-100 {
+  background-color: rgba(30, 58, 138, 0.3) !important;
+}
+
+.home-page .text-blue-600 {
+  color: #2563eb !important;
+}
+
+.dark .home-page .text-blue-600 {
+  color: #60a5fa !important;
+}
+
+/* Gradient support for home page */
+.home-page.bg-gradient-to-br {
+  background-image: linear-gradient(to bottom right, var(--tw-gradient-stops)) !important;
+}
+
+.home-page.from-blue-50 {
+  --tw-gradient-from: #eff6ff !important;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, #eff6ff) !important;
+}
+
+.home-page.to-indigo-100 {
+  --tw-gradient-to: #e0e7ff !important;
+}
+
+.dark .home-page.from-blue-50 {
+  --tw-gradient-from: #111827 !important;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, #111827) !important;
+}
+
+.dark .home-page.to-indigo-100 {
+  --tw-gradient-to: #1f2937 !important;
+}
+
+/* Card hover effects */
+.home-page .group:hover .transform {
+  transform: translateX(0.25rem);
+}
+
+/* Ensure smooth transitions */
+.home-page,
+.home-page * {
+  transition-property: background-color, border-color, color, fill, stroke, transform;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 300ms;
+}
