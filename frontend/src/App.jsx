@@ -1,3 +1,4 @@
+// frontend/src/App.jsx
 import React, { useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 
@@ -20,14 +21,21 @@ import StudentBatches from "./components/pages/StudentBatches";
 import Settings from "./components/pages/Settings";
 import Suggestions from "./components/pages/Suggestions";
 import Contact from "./components/pages/Contact";
-
+import VerifyEmail from "./components/pages/VerifyEmail";
 import ProtectedRoute from "./components/pages/ProtectedRoute";
 import { useAuth } from "./context/AuthContext";
 
 import { SuggestionProvider } from "./context/SuggestionContext";
 import { SettingsProvider, useSettings } from "./context/SettingsContext";
+import ChangePassword from './components/pages/ChangePassword';
 
-// Theme Manager Component - to apply theme globally
+// ✅ Faculty Leave - Only if needed
+// import FacultyLeave from "./components/pages/FacultyLeave";
+
+// ✅ Admin Leave Management - Only if needed
+// import AdminLeaveManagement from "./components/pages/AdminLeaveManagement";
+
+// Theme Manager Component
 const ThemeManager = ({ children }) => {
   const { settings, loading } = useSettings();
 
@@ -36,7 +44,6 @@ const ThemeManager = ({ children }) => {
       const root = document.documentElement;
       const body = document.body;
       
-      // Apply theme from settings
       if (settings.theme === "dark") {
         root.classList.add("dark");
         root.style.backgroundColor = "#111827";
@@ -102,9 +109,10 @@ function AppContent() {
 
           {/* 🔹 PASSWORD */}
           <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/reset-password/:token" element={<ResetPassword />} />
+          <Route path="/reset-password/" element={<ResetPassword />} />
+          <Route path="/verify-email" element={<VerifyEmail />} />
 
-          {/* ✅ USER + ADMIN */}
+          {/* ✅ DASHBOARD - All Roles */}
           <Route
             path="/dashboard"
             element={
@@ -114,6 +122,7 @@ function AppContent() {
             }
           />
 
+          {/* ✅ PROFILE - All Roles */}
           <Route
             path="/profile"
             element={
@@ -123,61 +132,17 @@ function AppContent() {
             }
           />
 
+          {/* ✅ CHANGE PASSWORD - All Roles */}
           <Route
-            path="/suggestions"
+            path="/change-password"
             element={
               <ProtectedRoute>
-                <Suggestions />
+                <ChangePassword />
               </ProtectedRoute>
             }
           />
 
-          <Route
-            path="/contact"
-            element={
-              <ProtectedRoute>
-                <Contact />
-              </ProtectedRoute>
-            }
-          />
-
-          {/* 🔴 ADMIN ONLY */}
-          <Route
-            path="/create-timetable"
-            element={
-              <ProtectedRoute role="admin">
-                <CreateTimetable />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/subject"
-            element={
-              <ProtectedRoute role="admin">
-                <Subject />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/faculty"
-            element={
-              <ProtectedRoute role="admin">
-                <Faculty />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/classrooms"
-            element={
-              <ProtectedRoute role="admin">
-                <Classroom />
-              </ProtectedRoute>
-            }
-          />
-
+          {/* ✅ STUDENT BATCHES - All Roles */}
           <Route
             path="/studentBatches"
             element={
@@ -187,6 +152,70 @@ function AppContent() {
             }
           />
 
+          {/* ✅ SUBJECT - Faculty & Admin */}
+          <Route
+            path="/subject"
+            element={
+              <ProtectedRoute  role={["admin", "faculty"]}>
+                <Subject />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* ✅ CLASSROOMS - Faculty & Admin */}
+          <Route
+            path="/classrooms"
+            element={
+              <ProtectedRoute  role={["admin", "faculty"]}>
+                <Classroom />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* ✅ FACULTY - Faculty & Admin */}
+          <Route
+            path="/faculty"
+            element={
+              <ProtectedRoute  role={["admin", "faculty"]}>
+                <Faculty />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* ✅ CREATE TIMETABLE - Admin Only */}
+        
+
+          <Route
+            path="/create-timetable"
+            element={
+              <ProtectedRoute  role={["admin", "faculty"]}>
+                <CreateTimetable />
+              </ProtectedRoute>
+            }
+          />
+
+
+          {/* ✅ SUGGESTIONS - All Roles */}
+          <Route
+            path="/suggestions"
+            element={
+              <ProtectedRoute>
+                <Suggestions />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* ✅ CONTACT - All Roles */}
+          <Route
+            path="/contact"
+            element={
+              <ProtectedRoute>
+                <Contact />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* ✅ SETTINGS - All Roles */}
           <Route
             path="/settings"
             element={
@@ -196,6 +225,7 @@ function AppContent() {
             }
           />
 
+          {/* 🔹 404 - Redirect to Home */}
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </div>
@@ -208,11 +238,11 @@ function AppContent() {
 function App() {
   return (
     <SettingsProvider>
-        <SuggestionProvider>
-          <ThemeManager>
-            <AppContent />
-          </ThemeManager>
-        </SuggestionProvider>
+      <SuggestionProvider>
+        <ThemeManager>
+          <AppContent />
+        </ThemeManager>
+      </SuggestionProvider>
     </SettingsProvider>
   );
 }

@@ -1,12 +1,12 @@
+// frontend/src/components/pages/Profile.jsx
 import React, { useState, useEffect } from 'react';
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from 'react-router-dom';
 
 const Profile = () => {
-  const { user, updateProfile, logout } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
 
-  const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState('profile');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -36,15 +36,6 @@ const Profile = () => {
     }
   }, [user]);
 
-  const handleProfileChange = (e) => {
-    const { name, value } = e.target;
-    setProfileData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-    clearMessages();
-  };
-
   const handlePasswordChange = (e) => {
     const { name, value } = e.target;
     setPasswordData(prev => ({
@@ -57,41 +48,6 @@ const Profile = () => {
   const clearMessages = () => {
     if (error) setError('');
     if (success) setSuccess('');
-  };
-
-  const handleProfileSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
-    setSuccess('');
-
-    if (!profileData.name.trim()) {
-      setError('Full name is required');
-      setLoading(false);
-      return;
-    }
-
-    if (!profileData.email.trim()) {
-      setError('Email address is required');
-      setLoading(false);
-      return;
-    }
-
-    try {
-      const result = await updateProfile(profileData);
-
-      if (result.success) {
-        setSuccess(result.message || 'Profile updated successfully');
-        setIsEditing(false);
-      } else {
-        setError(result.message || 'Failed to update profile');
-      }
-    } catch (error) {
-      console.error('Profile update error:', error);
-      setError('An error occurred while updating profile.');
-    } finally {
-      setLoading(false);
-    }
   };
 
   const handlePasswordSubmit = async (e) => {
@@ -124,37 +80,50 @@ const Profile = () => {
       return;
     }
 
-    try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+    if (passwordData.currentPassword === passwordData.newPassword) {
+      setError('New password must be different from current password');
+      setLoading(false);
+      return;
+    }
 
-      setSuccess('Password changed successfully. Please login again.');
-      setPasswordData({
-        currentPassword: '',
-        newPassword: '',
-        confirmPassword: ''
+    try {
+      const token = localStorage.getItem('auth_token');
+      
+      const response = await fetch('http://localhost:5000/api/auth/change-password', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          currentPassword: passwordData.currentPassword,
+          newPassword: passwordData.newPassword,
+        }),
       });
 
-      setTimeout(() => {
-        logout();
-        navigate('/login');
-      }, 2000);
+      const data = await response.json();
 
+      if (data.success) {
+        setSuccess('✅ Password changed successfully! Please login again.');
+        setPasswordData({
+          currentPassword: '',
+          newPassword: '',
+          confirmPassword: ''
+        });
+
+        setTimeout(() => {
+          logout();
+          navigate('/login');
+        }, 2000);
+      } else {
+        setError(data.message || 'Failed to change password');
+      }
     } catch (error) {
+      console.error('Change password error:', error);
       setError('An error occurred while changing password.');
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleCancel = () => {
-    setIsEditing(false);
-    setProfileData({
-      name: user?.name || '',
-      email: user?.email || '',
-      department: user?.department || '',
-      semester: user?.semester || ''
-    });
-    clearMessages();
   };
 
   const handleLogout = () => {
@@ -172,11 +141,35 @@ const Profile = () => {
       .slice(0, 2);
   };
 
+  const getRoleColor = (role) => {
+    switch(role) {
+      case 'admin': return 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300';
+      case 'faculty': return 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300';
+      default: return 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300';
+    }
+  };
+
+  const getRoleIcon = (role) => {
+    switch(role) {
+      case 'admin': return 'fa-crown';
+      case 'faculty': return 'fa-chalkboard-teacher';
+      default: return 'fa-graduation-cap';
+    }
+  };
+
+  const getRoleLabel = (role) => {
+    switch(role) {
+      case 'admin': return 'Administrator';
+      case 'faculty': return 'Faculty';
+      default: return 'Student';
+    }
+  };
+
   if (!user) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-16 flex items-center justify-center">
         <div className="text-center">
-          <i className="fas fa-spinner fa-spin text-blue-500 text-4xl mb-4"></i>
+          <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-600 dark:text-gray-400">Loading profile...</p>
         </div>
       </div>
@@ -184,10 +177,11 @@ const Profile = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-16">
-      <div className="max-w-6xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-20">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-        <div className="text-center mb-8">
+        {/* Page Header */}
+          <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
             Profile Settings
           </h1>
@@ -195,421 +189,305 @@ const Profile = () => {
             Manage your account information and security
           </p>
         </div>
+         
+        
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
 
           {/* Sidebar */}
           <div className="lg:col-span-1">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 sticky top-24">
-              <div className="text-center mb-6">
-                <div className="w-32 h-32 mx-auto bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mb-4 border-4 border-white dark:border-gray-700 shadow-lg">
-                  <span className="text-white text-4xl font-bold">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden sticky top-24">
+              {/* Profile Summary */}
+              <div className="p-6 text-center border-b border-gray-200 dark:border-gray-700">
+                <div className="w-20 h-20 mx-auto bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mb-3 shadow-lg shadow-blue-500/20">
+                  <span className="text-white text-2xl font-bold">
                     {getInitials(user.name)}
                   </span>
                 </div>
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white break-words">
-                  {user.name || 'User Name'}
-                </h2>
-                <p className="text-gray-600 dark:text-gray-400 text-sm mt-1 break-words">
-                  {user.email || 'user@example.com'}
+                <h3 className="font-semibold text-gray-900 dark:text-white text-base">
+                  {user.name || 'User'}
+                </h3>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate">
+                  {user.email || 'No email'}
                 </p>
-                <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-600 mt-2">
-                  <i className="fas fa-user-tag mr-2 text-xs"></i>
-                  {user.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : 'User'}
+                <div className="flex items-center justify-center gap-1.5 mt-2">
+                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                    <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
+                    Active
+                  </span>
                 </div>
               </div>
 
-              <div className="space-y-4">
-                {/* Account Status */}
-                <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-                  <div className="flex items-center">
-                    <i className="fas fa-shield-alt text-green-500 mr-3"></i>
-                    <span className="text-green-600 dark:text-green-400 font-medium">Status</span>
-                  </div>
-                  <span className="text-green-600 dark:text-green-400 font-medium">Active</span>
-                </div>
-              </div>
-
-              <div className="mt-6 space-y-2">
+              {/* Navigation */}
+              <nav className="p-2 space-y-0.5">
                 <button
                   onClick={() => setActiveTab('profile')}
-                  className={`w-full text-left px-4 py-3 rounded-lg text-sm font-semibold transition-colors flex items-center space-x-3 ${
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
                     activeTab === 'profile'
-                      ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-600'
-                      : 'text-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
+                      ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700/50'
                   }`}
                 >
-                  <i className="fas fa-user-circle w-5 text-center"></i>
+                  <i className={`fas fa-user w-4 text-center ${activeTab === 'profile' ? 'text-blue-500' : 'text-gray-400'}`}></i>
                   <span>Profile Information</span>
                 </button>
 
                 <button
                   onClick={() => setActiveTab('password')}
-                  className={`w-full text-left px-4 py-3 rounded-lg text-sm font-semibold transition-colors flex items-center space-x-3 ${
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
                     activeTab === 'password'
-                      ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
-                      : 'text-gray-600 dark:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700'
+                      ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700/50'
                   }`}
                 >
-                  <i className="fas fa-lock w-5 text-center"></i>
+                  <i className={`fas fa-lock w-4 text-center ${activeTab === 'password' ? 'text-blue-500' : 'text-gray-400'}`}></i>
                   <span>Change Password</span>
                 </button>
 
-                <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+                <div className="border-t border-gray-200 dark:border-gray-700 my-2 pt-2">
                   <button
                     onClick={() => navigate('/forgot-password')}
-                    className="w-full text-left px-4 py-2 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 flex items-center space-x-2 mb-2"
+                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-all duration-200"
                   >
-                    <i className="fas fa-key w-4"></i>
+                    <i className="fas fa-key w-4 text-center text-gray-400"></i>
                     <span>Forgot Password?</span>
                   </button>
 
                   <button
                     onClick={handleLogout}
-                    className="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:text-red-500 dark:hover:text-red-300 flex items-center space-x-2"
+                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-200"
                   >
-                    <i className="fas fa-sign-out-alt w-4"></i>
+                    <i className="fas fa-sign-out-alt w-4 text-center text-red-500"></i>
                     <span>Logout</span>
                   </button>
                 </div>
-              </div>
+              </nav>
             </div>
           </div>
 
           {/* Main Content */}
           <div className="lg:col-span-3">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
 
               {error && (
-                <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg flex items-start">
-                  <i className="fas fa-exclamation-circle text-red-500 dark:text-red-400 mr-3 mt-0.5"></i>
+                <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg flex items-start gap-3">
+                  <i className="fas fa-exclamation-circle text-red-500 dark:text-red-400 mt-0.5"></i>
                   <div>
-                    <span className="text-red-700 dark:text-red-400 text-sm font-medium">{error}</span>
+                    <p className="text-sm text-red-700 dark:text-red-400">{error}</p>
                   </div>
                 </div>
               )}
 
               {success && (
-                <div className="mb-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg flex items-start">
-                  <i className="fas fa-check-circle text-green-500 dark:text-green-400 mr-3 mt-0.5"></i>
+                <div className="mb-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg flex items-start gap-3">
+                  <i className="fas fa-check-circle text-green-500 dark:text-green-400 mt-0.5"></i>
                   <div>
-                    <span className="text-green-700 dark:text-green-400 text-sm font-medium">{success}</span>
+                    <p className="text-sm text-green-700 dark:text-green-400">{success}</p>
                     {success.includes('Please login again') && (
-                      <p className="text-green-600 dark:text-green-500 text-xs mt-1">
-                        Redirecting to login page...
-                      </p>
+                      <p className="text-xs text-green-600 dark:text-green-500 mt-1">Redirecting to login page...</p>
                     )}
                   </div>
                 </div>
               )}
 
               {activeTab === 'profile' && (
-                <form onSubmit={handleProfileSubmit} className="space-y-6">
-                  <div className="border-b border-gray-200 dark:border-gray-700 pb-6">
-                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-6 flex items-center">
-                      <i className="fas fa-user-circle text-blue-500 mr-3 text-lg"></i>
-                      Personal Information
-                    </h3>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                          Full Name *
-                        </label>
-                        <div className="relative">
-                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i className="fas fa-user text-gray-400 dark:text-gray-500"></i>
-                          </div>
-                          <input
-                            id="name"
-                            name="name"
-                            type="text"
-                            required
-                            disabled={!isEditing}
-                            className={`block w-full pl-10 pr-3 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
-                              !isEditing 
-                                ? 'bg-gray-50 dark:bg-gray-700/50 text-gray-600 dark:text-gray-400 cursor-not-allowed border-gray-300 dark:border-gray-600' 
-                                : 'bg-white dark:bg-gray-900 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600'
-                            }`}
-                            placeholder="Enter your full name"
-                            value={profileData.name}
-                            onChange={handleProfileChange}
-                          />
-                        </div>
-                        {!isEditing && (
-                          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Enable edit mode to change</p>
-                        )}
-                      </div>
-
-                      <div>
-                        <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                          Email Address *
-                        </label>
-                        <div className="relative">
-                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i className="fas fa-envelope text-gray-400 dark:text-gray-500"></i>
-                          </div>
-                          <input
-                            id="email"
-                            name="email"
-                            type="email"
-                            required
-                            disabled={!isEditing}
-                            className={`block w-full pl-10 pr-3 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
-                              !isEditing 
-                                ? 'bg-gray-50 dark:bg-gray-700/50 text-gray-600 dark:text-gray-400 cursor-not-allowed border-gray-300 dark:border-gray-600' 
-                                : 'bg-white dark:bg-gray-900 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600'
-                            }`}
-                            placeholder="Enter your email address"
-                            value={profileData.email}
-                            onChange={handleProfileChange}
-                          />
-                        </div>
-                        {!isEditing && (
-                          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Enable edit mode to change</p>
-                        )}
-                      </div>
-
-                      {/* Department Field - Show only for users */}
-                      {user.role === 'user' && (
-                        <div>
-                          <label htmlFor="department" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                            Department *
-                          </label>
-                          <div className="relative">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                              <i className="fas fa-building text-gray-400 dark:text-gray-500"></i>
-                            </div>
-                            <input
-                              id="department"
-                              name="department"
-                              type="text"
-                              required
-                              disabled={true}
-                              className="block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700/50 text-gray-600 dark:text-gray-400 cursor-not-allowed"
-                              value={profileData.department}
-                              readOnly
-                            />
-                          </div>
-                          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Contact administrator to change department</p>
-                        </div>
-                      )}
-
-                      {/* Semester Field - Show only for users */}
-                      {user.role === 'user' && (
-                        <div>
-                          <label htmlFor="semester" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                            Semester *
-                          </label>
-                          <div className="relative">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                              <i className="fas fa-graduation-cap text-gray-400 dark:text-gray-500"></i>
-                            </div>
-                            <input
-                              id="semester"
-                              name="semester"
-                              type="text"
-                              required
-                              disabled={true}
-                              className="block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700/50 text-gray-600 dark:text-gray-400 cursor-not-allowed"
-                              value={profileData.semester}
-                              readOnly
-                            />
-                          </div>
-                          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Contact administrator to change semester</p>
-                        </div>
-                      )}
-
-                      {/* Role Information - Read only */}
-                      <div>
-                        <label htmlFor="role" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                          Account Type
-                        </label>
-                        <div className="relative">
-                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i className="fas fa-user-tag text-gray-400 dark:text-gray-500"></i>
-                          </div>
-                          <input
-                            id="role"
-                            name="role"
-                            type="text"
-                            disabled={true}
-                            className="block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700/50 text-gray-600 dark:text-gray-400 cursor-not-allowed"
-                            value={user.role === 'admin' ? 'Administrator' : 'User (Student)'}
-                            readOnly
-                          />
-                        </div>
-                      </div>
-
-                      {/* Account Created Date - Read only */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                          Account Created
-                        </label>
-                        <div className="relative">
-                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i className="fas fa-calendar text-gray-400 dark:text-gray-500"></i>
-                          </div>
-                          <input
-                            type="text"
-                            disabled={true}
-                            className="block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700/50 text-gray-600 dark:text-gray-400 cursor-not-allowed"
-                            value={user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-US', {
-                              year: 'numeric',
-                              month: 'long',
-                              day: 'numeric'
-                            }) : 'N/A'}
-                            readOnly
-                          />
-                        </div>
-                      </div>
+                <div>
+                  <div className="flex items-center gap-3 mb-6 pb-4 border-b border-gray-200 dark:border-gray-700">
+                    <div className="w-9 h-9 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                      <i className="fas fa-id-card text-blue-600 dark:text-blue-400 text-sm"></i>
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-gray-900 dark:text-white">Personal Information</h3>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">Your account details</p>
                     </div>
                   </div>
 
-                  <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t border-gray-200 dark:border-gray-700">
-                    {!isEditing ? (
-                      <button
-                        type="button"
-                        onClick={() => setIsEditing(true)}
-                        className="flex-1 flex justify-center items-center py-3 px-6 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
-                      >
-                        <i className="fas fa-edit mr-3"></i>
-                        Edit Profile
-                      </button>
-                    ) : (
-                      <>
-                        <button
-                          type="submit"
-                          disabled={loading}
-                          className="flex-1 flex justify-center items-center py-3 px-6 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                        >
-                          {loading ? (
-                            <>
-                              <i className="fas fa-spinner fa-spin mr-3"></i>
-                              Saving...
-                            </>
-                          ) : (
-                            <>
-                              <i className="fas fa-save mr-3"></i>
-                              Save Changes
-                            </>
-                          )}
-                        </button>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Name */}
+                    <div className="bg-gray-50 dark:bg-gray-700/30 rounded-lg p-4">
+                      <label className="flex items-center gap-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
+                        <i className="fas fa-user text-gray-400 text-[10px]"></i>
+                        Full Name
+                      </label>
+                      <p className="text-gray-900 dark:text-white font-medium">
+                        {profileData.name || 'Not set'}
+                      </p>
+                    </div>
 
-                        <button
-                          type="button"
-                          onClick={handleCancel}
-                          disabled={loading}
-                          className="flex-1 flex justify-center items-center py-3 px-6 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-base font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 transition-colors"
-                        >
-                          <i className="fas fa-times mr-3"></i>
-                          Cancel
-                        </button>
-                      </>
+                    {/* Email */}
+                    <div className="bg-gray-50 dark:bg-gray-700/30 rounded-lg p-4">
+                      <label className="flex items-center gap-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
+                        <i className="fas fa-envelope text-gray-400 text-[10px]"></i>
+                        Email Address
+                      </label>
+                      <p className="text-gray-900 dark:text-white font-medium">
+                        {profileData.email || 'Not set'}
+                      </p>
+                    </div>
+
+                    {/* Department - Only for Students */}
+                    {user.role === 'user' && (
+                      <div className="bg-gray-50 dark:bg-gray-700/30 rounded-lg p-4">
+                        <label className="flex items-center gap-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
+                          <i className="fas fa-building text-gray-400 text-[10px]"></i>
+                          Department
+                        </label>
+                        <p className="text-gray-900 dark:text-white font-medium">
+                          {profileData.department || 'Not set'}
+                        </p>
+                        <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">Contact admin to change</p>
+                      </div>
                     )}
+
+                    {/* Semester - Only for Students */}
+                    {user.role === 'user' && (
+                      <div className="bg-gray-50 dark:bg-gray-700/30 rounded-lg p-4">
+                        <label className="flex items-center gap-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
+                          <i className="fas fa-graduation-cap text-gray-400 text-[10px]"></i>
+                          Semester
+                        </label>
+                        <p className="text-gray-900 dark:text-white font-medium">
+                          {profileData.semester || 'Not set'}
+                        </p>
+                        <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">Contact admin to change</p>
+                      </div>
+                    )}
+
+                    {/* Role */}
+                    <div className="bg-gray-50 dark:bg-gray-700/30 rounded-lg p-4">
+                      <label className="flex items-center gap-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
+                        <i className="fas fa-user-tag text-gray-400 text-[10px]"></i>
+                        Account Type
+                      </label>
+                      <p className="text-gray-900 dark:text-white font-medium">
+                        {getRoleLabel(user.role)}
+                      </p>
+                    </div>
+
+                    {/* Account Created */}
+                    <div className="bg-gray-50 dark:bg-gray-700/30 rounded-lg p-4">
+                      <label className="flex items-center gap-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
+                        <i className="fas fa-calendar-alt text-gray-400 text-[10px]"></i>
+                        Member Since
+                      </label>
+                      <p className="text-gray-900 dark:text-white font-medium">
+                        {user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric'
+                        }) : 'N/A'}
+                      </p>
+                    </div>
                   </div>
-                </form>
+                </div>
               )}
 
               {activeTab === 'password' && (
                 <form onSubmit={handlePasswordSubmit} className="space-y-6">
-                  <div className="border-b border-gray-200 dark:border-gray-700 pb-6">
-                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-6 flex items-center">
-                      <i className="fas fa-lock text-blue-500 mr-3 text-lg"></i>
-                      Change Password
-                    </h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
-                      After changing your password, you will be automatically logged out and need to login again.
-                    </p>
+                  <div className="flex items-center gap-3 mb-6 pb-4 border-b border-gray-200 dark:border-gray-700">
+                    <div className="w-9 h-9 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                      <i className="fas fa-key text-blue-600 dark:text-blue-400 text-sm"></i>
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-gray-900 dark:text-white">Change Password</h3>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">Update your security credentials</p>
+                    </div>
+                  </div>
 
-                    <div className="space-y-6 max-w-2xl">
+                  <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/50 rounded-lg p-4 mb-6">
+                    <div className="flex items-start gap-3">
+                      <i className="fas fa-info-circle text-amber-600 dark:text-amber-400 mt-0.5 text-sm"></i>
+                      <p className="text-sm text-amber-700 dark:text-amber-300">
+                        After changing your password, you will be automatically logged out and need to login again.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div>
+                      <label htmlFor="currentPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                        Current Password <span className="text-red-500">*</span>
+                      </label>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                          <i className="fas fa-lock text-gray-400 dark:text-gray-500 text-sm"></i>
+                        </div>
+                        <input
+                          id="currentPassword"
+                          name="currentPassword"
+                          type="password"
+                          required
+                          className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-sm"
+                          placeholder="Enter your current password"
+                          value={passwordData.currentPassword}
+                          onChange={handlePasswordChange}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label htmlFor="currentPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                          Current Password *
+                        <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                          New Password <span className="text-red-500">*</span>
                         </label>
                         <div className="relative">
                           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i className="fas fa-key text-gray-400 dark:text-gray-500"></i>
+                            <i className="fas fa-lock text-gray-400 dark:text-gray-500 text-sm"></i>
                           </div>
                           <input
-                            id="currentPassword"
-                            name="currentPassword"
+                            id="newPassword"
+                            name="newPassword"
                             type="password"
                             required
-                            className="block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
-                            placeholder="Enter your current password"
-                            value={passwordData.currentPassword}
+                            className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-sm"
+                            placeholder="Enter new password"
+                            value={passwordData.newPassword}
                             onChange={handlePasswordChange}
                           />
                         </div>
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Minimum 6 characters</p>
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                          <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                            New Password *
-                          </label>
-                          <div className="relative">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                              <i className="fas fa-lock text-gray-400 dark:text-gray-500"></i>
-                            </div>
-                            <input
-                              id="newPassword"
-                              name="newPassword"
-                              type="password"
-                              required
-                              className="block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
-                              placeholder="Enter new password"
-                              value={passwordData.newPassword}
-                              onChange={handlePasswordChange}
-                            />
+                      <div>
+                        <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                          Confirm New Password <span className="text-red-500">*</span>
+                        </label>
+                        <div className="relative">
+                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i className="fas fa-lock text-gray-400 dark:text-gray-500 text-sm"></i>
                           </div>
-                          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Minimum 6 characters</p>
-                        </div>
-
-                        <div>
-                          <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                            Confirm New Password *
-                          </label>
-                          <div className="relative">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                              <i className="fas fa-lock text-gray-400 dark:text-gray-500"></i>
-                            </div>
-                            <input
-                              id="confirmPassword"
-                              name="confirmPassword"
-                              type="password"
-                              required
-                              className="block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
-                              placeholder="Confirm new password"
-                              value={passwordData.confirmPassword}
-                              onChange={handlePasswordChange}
-                            />
-                          </div>
+                          <input
+                            id="confirmPassword"
+                            name="confirmPassword"
+                            type="password"
+                            required
+                            className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-sm"
+                            placeholder="Confirm new password"
+                            value={passwordData.confirmPassword}
+                            onChange={handlePasswordChange}
+                          />
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t border-gray-200 dark:border-gray-700">
-                    <button
-                      type="submit"
-                      disabled={loading}
-                      className="flex-1 flex justify-center items-center py-3 px-6 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                    >
-                      {loading ? (
-                        <>
-                          <i className="fas fa-spinner fa-spin mr-3"></i>
-                          Changing Password...
-                        </>
-                      ) : (
-                        <>
-                          <i className="fas fa-key mr-3"></i>
-                          Change Password
-                        </>
-                      )}
-                    </button>
-                  </div>
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full flex justify-center items-center gap-2 py-2.5 px-4 border border-transparent rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                  >
+                    {loading ? (
+                      <>
+                        <i className="fas fa-spinner fa-spin"></i>
+                        Changing Password...
+                      </>
+                    ) : (
+                      <>
+                        <i className="fas fa-key"></i>
+                        Change Password
+                      </>
+                    )}
+                  </button>
                 </form>
               )}
             </div>

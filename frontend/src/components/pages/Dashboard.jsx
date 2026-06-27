@@ -1,5 +1,7 @@
+// frontend/src/components/pages/Dashboard.jsx
 import React, { useState, useEffect } from 'react';
 import { dashboardAPI } from '../../services/api';
+
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -14,7 +16,6 @@ import {
 } from 'chart.js';
 import { Bar, Pie, Doughnut } from 'react-chartjs-2';
 
-// Register ChartJS components
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -43,12 +44,11 @@ const Dashboard = () => {
     try {
       setLoading(true);
       const response = await dashboardAPI.getDashboard();
-      console.log('Dashboard API Response:', response.data); // Debug log
+      console.log('Dashboard API Response:', response.data);
 
       if (response.data?.data) {
         setDashboardData(response.data.data);
       } else if (response.data) {
-        // Handle case where data might be directly in response
         setDashboardData(response.data);
       }
       setError(null);
@@ -73,7 +73,6 @@ const Dashboard = () => {
     }
   };
 
-  // Filter activities based on selected filter
   const getFilteredActivities = () => {
     const activities = dashboardData?.recentActivities || [];
     if (!activities.length) return [];
@@ -82,11 +81,9 @@ const Dashboard = () => {
     return activities.filter(a => a.type === activityFilter);
   };
 
-  // Prepare timetable chart data with fallback values
   const prepareTimetableChartData = () => {
     const timetablesByStatus = dashboardData?.charts?.timetablesByStatus || [];
 
-    // If no data, return default structure with zero values
     if (!timetablesByStatus.length) {
       return {
         labels: ['Active', 'Draft', 'Archived'],
@@ -107,7 +104,6 @@ const Dashboard = () => {
       };
     }
 
-    // Map status labels to user-friendly names
     const statusLabels = timetablesByStatus.map(t => {
       const status = t.status?.toLowerCase();
       if (status === 'active') return 'Active';
@@ -174,7 +170,6 @@ const Dashboard = () => {
   const activities = dashboardData?.recentActivities || [];
   const filteredActivities = getFilteredActivities();
 
-  // Prepare all chart data with fallbacks
   const batchesChartData = {
     labels: charts.batchesByDepartment?.map(d => d.department) || [],
     datasets: [
@@ -281,16 +276,14 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Last Updated */}
         {dashboardData?.lastUpdated && (
           <p className="text-sm text-gray-500 mb-6">
             Last updated: {new Date(dashboardData.lastUpdated).toLocaleString()}
           </p>
         )}
 
-        {/* Statistics Cards - 6 Cards in 2 Rows (3 each) as per image */}
+        {/* Statistics Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          {/* Total Batches */}
           <div className="bg-white rounded-lg shadow-md p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -306,7 +299,6 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* Total Students */}
           <div className="bg-white rounded-lg shadow-md p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -320,7 +312,6 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* Total Faculty */}
           <div className="bg-white rounded-lg shadow-md p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -334,7 +325,6 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* Total Classrooms */}
           <div className="bg-white rounded-lg shadow-md p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -350,7 +340,6 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* Total Subjects */}
           <div className="bg-white rounded-lg shadow-md p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -364,7 +353,6 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* Total Timetables */}
           <div className="bg-white rounded-lg shadow-md p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -381,7 +369,6 @@ const Dashboard = () => {
 
         {/* Charts Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          {/* Batches by Department */}
           <div className="bg-white rounded-lg shadow-md p-6">
             <h3 className="text-lg font-semibold text-gray-800 mb-4">Batches by Department</h3>
             {charts.batchesByDepartment?.length > 0 ? (
@@ -402,7 +389,6 @@ const Dashboard = () => {
             )}
           </div>
 
-          {/* Faculty Distribution */}
           <div className="bg-white rounded-lg shadow-md p-6">
             <h3 className="text-lg font-semibold text-gray-800 mb-4">Faculty by Department</h3>
             {charts.facultyByDepartment?.length > 0 ? (
@@ -423,7 +409,6 @@ const Dashboard = () => {
             )}
           </div>
 
-          {/* Subjects by Type */}
           <div className="bg-white rounded-lg shadow-md p-6">
             <h3 className="text-lg font-semibold text-gray-800 mb-4">Subjects by Type</h3>
             {charts.subjectsByType?.length > 0 ? (
@@ -446,7 +431,6 @@ const Dashboard = () => {
             )}
           </div>
 
-          {/* Classrooms by Type */}
           <div className="bg-white rounded-lg shadow-md p-6">
             <h3 className="text-lg font-semibold text-gray-800 mb-4">Classrooms by Type</h3>
             {charts.classroomsByType?.length > 0 ? (
@@ -466,9 +450,6 @@ const Dashboard = () => {
             )}
           </div>
 
-         
-
-          {/*  Timetables by Status chart ke liye better display */}
           <div className="bg-white rounded-lg shadow-md p-6">
             <h3 className="text-lg font-semibold text-gray-800 mb-4">Timetables by Status</h3>
             {charts.timetablesByStatus && charts.timetablesByStatus.length > 0 ? (
@@ -505,7 +486,6 @@ const Dashboard = () => {
                     />
                   </div>
                 </div>
-                {/* Total timetables summary */}
                 <div className="mt-4 text-center">
                   <p className="text-sm text-gray-600">
                     Total Timetables: <span className="font-semibold">{stats.totalTimetables || 0}</span>
@@ -568,7 +548,7 @@ const Dashboard = () => {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm text-gray-600 truncate">{activity.description}</p>
-                      <p className="text-xs text-gray-5600">
+                      <p className="text-xs text-gray-400">
                         {new Date(activity.timestamp).toLocaleString()}
                       </p>
                     </div>

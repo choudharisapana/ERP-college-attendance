@@ -1,4 +1,4 @@
-// frontend/src/pages/Register.jsx - Add this state and update handleSubmit
+// frontend/src/components/pages/Register.jsx
 import React, { useState } from 'react';
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate, Link } from 'react-router-dom';
@@ -12,34 +12,39 @@ const Register = () => {
     role: 'user',
     department: '',
     semester: '',
-    adminKey: ''
+    adminKey: '',
+    facultyKey: '', // ✅ ADDED
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  // 🔥 NEW STATE
   const [showVerificationMessage, setShowVerificationMessage] = useState(false);
   const [registeredEmail, setRegisteredEmail] = useState('');
 
   const { register, resendVerification } = useAuth();
   const navigate = useNavigate();
 
-  // Departments array (same as before)
   const departments = [
     "Computer Science Engineering",
     "Information Technology",
     "Computer Technology",
     "Industrial-IOT",
     "Artificial Intelligence",
+    "Data Science",
     "Civil Engineering",
     "Electrical Engineering",
     "Mechanical Engineering",
     "Robotics"
   ];
 
-  // Semesters array (same as before)
   const semesters = [
-    "Semester 1", "Semester 2", "Semester 3", "Semester 4",
-    "Semester 5", "Semester 6", "Semester 7", "Semester 8"
+    { value: 1, label: "Semester 1" },
+    { value: 2, label: "Semester 2" },
+    { value: 3, label: "Semester 3" },
+    { value: 4, label: "Semester 4" },
+    { value: 5, label: "Semester 5" },
+    { value: 6, label: "Semester 6" },
+    { value: 7, label: "Semester 7" },
+    { value: 8, label: "Semester 8" }
   ];
 
   const handleChange = (e) => {
@@ -49,8 +54,10 @@ const Register = () => {
       setFormData(prev => ({
         ...prev,
         [name]: value,
-        department: value === 'admin' ? '' : prev.department,
-        semester: value === 'admin' ? '' : prev.semester
+        department: value === 'user' ? prev.department : '',
+        semester: value === 'user' ? prev.semester : '',
+        adminKey: value === 'admin' ? prev.adminKey : '',
+        facultyKey: value === 'faculty' ? prev.facultyKey : '',
       }));
     } else {
       setFormData(prev => ({
@@ -60,11 +67,9 @@ const Register = () => {
     }
 
     if (error) setError('');
-    // Hide verification message when user starts typing again
     if (showVerificationMessage) setShowVerificationMessage(false);
   };
 
-  // 🔥 Handle resend verification
   const handleResendVerification = async () => {
     try {
       const result = await resendVerification(registeredEmail);
@@ -95,47 +100,63 @@ const Register = () => {
       return;
     }
 
+    // ✅ Student validation
     if (formData.role === 'user') {
       if (!formData.department) {
-        setError('Please select a department for user account');
+        setError('Please select a department for student account');
         setLoading(false);
         return;
       }
 
       if (!formData.semester) {
-        setError('Please select a semester for user account');
+        setError('Please select a semester for student account');
         setLoading(false);
         return;
       }
+    }
 
-      if (formData.role === "user" && !departments.includes(formData.department)) {
-        setError("Invalid department selected");
+    // ✅ Admin validation
+    if (formData.role === 'admin') {
+      if (!formData.adminKey.trim()) {
+        setError('Admin secret key is required');
+        setLoading(false);
+        return;
+      }
+    }
+
+    // ✅ Faculty validation
+    if (formData.role === 'faculty') {
+      if (!formData.facultyKey.trim()) {
+        setError('Faculty secret key is required');
         setLoading(false);
         return;
       }
     }
 
     try {
+      const semesterValue = formData.role === 'user' && formData.semester 
+        ? parseInt(formData.semester) 
+        : null;
+
       const userData = {
         name: formData.name,
         email: formData.email,
         password: formData.password,
         role: formData.role,
         department: formData.role === 'user' ? formData.department : undefined,
-        semester: formData.role === 'user' ? formData.semester : undefined,
-        adminKey: formData.adminKey.trim()
+        semester: semesterValue,
+        adminKey: formData.adminKey.trim(),
+        facultyKey: formData.facultyKey.trim(), // ✅ ADDED
       };
 
-      console.log("Registering user:", userData);
+      console.log("📤 Registering user:", userData);
 
       const result = await register(userData);
 
       if (result.success) {
         if (result.requiresVerification) {
-          // 🔥 Show verification message instead of auto-login
           setRegisteredEmail(result.email);
           setShowVerificationMessage(true);
-          // Reset form
           setFormData({
             name: '',
             email: '',
@@ -144,10 +165,10 @@ const Register = () => {
             role: 'user',
             department: '',
             semester: '',
-            adminKey: ''
+            adminKey: '',
+            facultyKey: '', // ✅ RESET
           });
         } else {
-          // Old flow - direct login
           navigate('/dashboard');
         }
       } else {
@@ -164,7 +185,6 @@ const Register = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
-        {/* Header */}
         <div className="text-center">
           <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
             Create Account
@@ -174,9 +194,7 @@ const Register = () => {
           </p>
         </div>
 
-        {/* Register Form */}
         <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700">
-          {/* 🔥 VERIFICATION SUCCESS MESSAGE */}
           {showVerificationMessage && (
             <div className="mb-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
               <div className="flex">
@@ -206,7 +224,6 @@ const Register = () => {
             </div>
           )}
 
-          {/* ERROR MESSAGE */}
           {error && !showVerificationMessage && (
             <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg flex items-center">
               <i className="fas fa-exclamation-circle text-red-500 dark:text-red-400 mr-3"></i>
@@ -214,7 +231,6 @@ const Register = () => {
             </div>
           )}
 
-          {/* FORM - Hide form when showing verification message */}
           {!showVerificationMessage && (
             <form className="space-y-5" onSubmit={handleSubmit} autoComplete="off">
               {/* Name Field */}
@@ -255,17 +271,14 @@ const Register = () => {
                     autoComplete="new-email"
                     required
                     className="block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
-                    placeholder="Enter your email (Gmail or College email only)"
+                    placeholder="Enter your email"
                     value={formData.email}
                     onChange={handleChange}
                   />
                 </div>
-                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                  Only @gmail.com and @college.edu emails are allowed
-                </p>
               </div>
 
-              {/* Role Field */}
+              {/* ✅ Role Field - 3 Options */}
               <div>
                 <label htmlFor="role" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Account Type
@@ -281,7 +294,8 @@ const Register = () => {
                     onChange={handleChange}
                     className="block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors appearance-none bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
                   >
-                    <option value="user">User (Student)</option>
+                    <option value="user">Student</option>
+                    <option value="faculty">Faculty</option>
                     <option value="admin">Administrator</option>
                   </select>
                   <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
@@ -290,7 +304,61 @@ const Register = () => {
                 </div>
               </div>
 
-              {/* Department & Semester Fields - Only for user role */}
+              {/* ✅ Faculty Key - Only for Faculty */}
+              {formData.role === 'faculty' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Faculty Secret Key <span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <i className="fas fa-key text-gray-400 dark:text-gray-500"></i>
+                    </div>
+                    <input
+                      type="password"
+                      name="facultyKey"
+                      autoComplete="new-password"
+                      required
+                      placeholder="Enter faculty secret key"
+                      className="block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 transition-colors bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
+                      value={formData.facultyKey}
+                      onChange={handleChange}
+                    />
+                  </div>
+                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    Contact administrator for faculty key
+                  </p>
+                </div>
+              )}
+
+              {/* ✅ Admin Key - Only for Admin */}
+              {formData.role === 'admin' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Admin Secret Key <span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <i className="fas fa-key text-gray-400 dark:text-gray-500"></i>
+                    </div>
+                    <input
+                      type="password"
+                      name="adminKey"
+                      autoComplete="new-password"
+                      required
+                      placeholder="Enter admin secret key"
+                      className="block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 transition-colors bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
+                      value={formData.adminKey}
+                      onChange={handleChange}
+                    />
+                  </div>
+                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    Contact administrator for admin key
+                  </p>
+                </div>
+              )}
+
+              {/* ✅ Department & Semester - Only for Student */}
               {formData.role === 'user' && (
                 <>
                   <div>
@@ -335,7 +403,9 @@ const Register = () => {
                       >
                         <option value="">Select Semester</option>
                         {semesters.map((sem) => (
-                          <option key={sem} value={sem}>{sem}</option>
+                          <option key={sem.value} value={sem.value}>
+                            {sem.label}
+                          </option>
                         ))}
                       </select>
                     </div>
@@ -343,40 +413,19 @@ const Register = () => {
                 </>
               )}
 
-              {/* Admin Key - Only for admin role */}
-              {formData.role === 'admin' && (
-                <>
-                  <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-                    <p className="text-sm text-blue-700 dark:text-blue-300">
-                      <i className="fas fa-info-circle mr-2"></i>
-                      Administrator accounts manage all departments and semesters.
-                    </p>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Admin Secret Key
-                    </label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <i className="fas fa-key text-gray-400"></i>
-                      </div>
-                      <input
-                        type="password"
-                        name="adminKey"
-                        autoComplete="new-password"
-                        required
-                        placeholder="Enter admin key"
-                        className="block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
-                        value={formData.adminKey}
-                        onChange={handleChange}
-                      />
-                    </div>
-                  </div>
-                </>
+              {/* Info Box for Faculty/Admin */}
+              {(formData.role === 'faculty' || formData.role === 'admin') && (
+                <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                  <p className="text-sm text-blue-700 dark:text-blue-300">
+                    <i className="fas fa-info-circle mr-2"></i>
+                    {formData.role === 'faculty' 
+                      ? 'Faculty accounts can manage subjects and view timetables.'
+                      : 'Administrator accounts manage all departments and semesters.'}
+                  </p>
+                </div>
               )}
 
-              {/* Password Field */}
+              {/* Password Fields */}
               <div>
                 <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Password
@@ -400,7 +449,6 @@ const Register = () => {
                 <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Must be at least 6 characters</p>
               </div>
 
-              {/* Confirm Password Field */}
               <div>
                 <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Confirm Password
@@ -423,7 +471,6 @@ const Register = () => {
                 </div>
               </div>
 
-              {/* Submit Button */}
               <button
                 type="submit"
                 disabled={loading}
@@ -444,7 +491,7 @@ const Register = () => {
             </form>
           )}
 
-          {/* Login Link - Show even after verification message */}
+          {/* Login Link */}
           <div className="mt-6">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
@@ -463,7 +510,7 @@ const Register = () => {
               to={showVerificationMessage ? "/login" : "/login"}
               className="inline-flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 font-medium transition-colors"
             >
-              {showVerificationMessage ? 'Sign in to your account' : 'Sign in to your account'}
+              Sign in to your account
               <i className="fas fa-arrow-right ml-2 text-sm"></i>
             </Link>
           </div>

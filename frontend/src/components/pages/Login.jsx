@@ -1,6 +1,6 @@
-// frontend/src/pages/Login.jsx - Add verification handling
+// frontend/src/components/pages/Login.jsx
 import React, { useState } from 'react';
-import { useAuth } from "../../context/AuthContext.jsx";
+import { useAuth } from "../../context/AuthContext";
 import { useNavigate, Link } from 'react-router-dom';
 
 const Login = () => {
@@ -10,7 +10,6 @@ const Login = () => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  // 🔥 NEW STATE
   const [showVerificationAlert, setShowVerificationAlert] = useState(false);
   const [verificationEmail, setVerificationEmail] = useState('');
 
@@ -26,7 +25,6 @@ const Login = () => {
     if (showVerificationAlert) setShowVerificationAlert(false);
   };
 
-  // 🔥 Handle resend verification
   const handleResendVerification = async () => {
     try {
       const result = await resendVerification(verificationEmail);
@@ -47,6 +45,12 @@ const Login = () => {
     setShowVerificationAlert(false);
 
     try {
+      // ✅ Clear any invalid token before login
+      const existingToken = localStorage.getItem("auth_token");
+      if (existingToken === "null" || existingToken === "undefined") {
+        localStorage.removeItem("auth_token");
+      }
+      
       const result = await login(formData.email, formData.password);
       
       console.log("Login result:", result);
@@ -54,7 +58,6 @@ const Login = () => {
       if (result && result.success) {
         navigate('/dashboard');
       } else if (result && result.requiresVerification) {
-        // 🔥 Show verification alert
         setShowVerificationAlert(true);
         setVerificationEmail(result.email);
         setError('');
@@ -72,7 +75,6 @@ const Login = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
-        {/* Header */}
         <div className="text-center">
           <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
             Login
@@ -82,9 +84,7 @@ const Login = () => {
           </p>
         </div>
 
-        {/* Login Form */}
         <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700">
-          {/* 🔥 VERIFICATION REQUIRED ALERT */}
           {showVerificationAlert && (
             <div className="mb-6 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
               <div className="flex">
@@ -114,7 +114,6 @@ const Login = () => {
             </div>
           )}
 
-          {/* ERROR MESSAGE */}
           {error && !showVerificationAlert && (
             <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg flex items-center">
               <i className="fas fa-exclamation-circle text-red-500 dark:text-red-400 mr-3"></i>
@@ -123,7 +122,6 @@ const Login = () => {
           )}
 
           <form className="space-y-6" onSubmit={handleSubmit}>
-            {/* Email Field */}
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Email Address
@@ -145,7 +143,6 @@ const Login = () => {
               </div>
             </div>
 
-            {/* Password Field */}
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Password
@@ -167,7 +164,6 @@ const Login = () => {
               </div>
             </div>
 
-            {/* Submit Button */}
             <button
               type="submit"
               disabled={loading}
@@ -187,7 +183,6 @@ const Login = () => {
             </button>
           </form>
 
-          {/* Divider */}
           <div className="mt-6">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
@@ -199,7 +194,6 @@ const Login = () => {
             </div>
           </div>
 
-          {/* Register Link */}
           <div className="mt-6 text-center">
             <Link
               to="/register"
@@ -210,7 +204,6 @@ const Login = () => {
             </Link>
           </div>
 
-          {/* Forgot Password Link */}
           <div className="mt-4 text-center">
             <Link
               to="/forgot-password"

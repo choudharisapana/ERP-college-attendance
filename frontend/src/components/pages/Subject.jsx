@@ -1,7 +1,12 @@
+// frontend/src/components/pages/Subject.jsx
 import React, { useState, useEffect } from "react";
 import { subjectAPI } from "../../services/api";
+import { useAuth } from "../../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const Subject = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [subjects, setSubjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -14,6 +19,9 @@ const Subject = () => {
   const [editingSubject, setEditingSubject] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [apiError, setApiError] = useState(null);
+
+  const isAdmin = user?.role === "admin";
+  const isFaculty = user?.role === "faculty";
 
   const [newSubject, setNewSubject] = useState({
     name: "",
@@ -36,12 +44,32 @@ const Subject = () => {
   const semesters = ["Semester 1", "Semester 2", "Semester 3", "Semester 4", 
                      "Semester 5", "Semester 6", "Semester 7", "Semester 8"];
 
+  useEffect(() => {
+    // ✅ Faculty can view, Admin can view
+    if (!isAdmin && !isFaculty) {
+      navigate('/dashboard');
+      return;
+    }
+    fetchSubjects();
+  }, [isAdmin, isFaculty]);
+
   // Fetch subjects from API
   const fetchSubjects = async () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await subjectAPI.getAll();
+      
+      // ✅ Faculty - Only their subjects, Admin - All subjects
+      let response;
+      if (isFaculty && !isAdmin) {
+        // Faculty ke sirf apne subjects
+        response = await subjectAPI.getMySubjects?.() || await subjectAPI.getAll();
+        console.log("📚 Faculty fetching my subjects");
+      } else {
+        // Admin - All subjects
+        response = await subjectAPI.getAll();
+        console.log("📚 Admin fetching all subjects");
+      }
       
       // Handle different response structures
       let subjectsData = [];
@@ -64,10 +92,6 @@ const Subject = () => {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    fetchSubjects();
-  }, []);
 
   // Filter subjects
   const filteredSubjects = subjects.filter((subject) => {
@@ -106,8 +130,13 @@ const Subject = () => {
     setSelectedSemester("All Semesters");
   };
 
-  // Delete subject function with confirmation
+  // Delete subject function - Only Admin
   const handleDeleteSubject = async (id) => {
+    if (!isAdmin) {
+      alert("You don't have permission to delete subjects");
+      return;
+    }
+
     if (!id) {
       alert("Invalid subject ID");
       return;
@@ -130,8 +159,13 @@ const Subject = () => {
     }
   };
 
-  // Open Edit Modal
+  // Open Edit Modal - Only Admin
   const openEditModal = (subject) => {
+    if (!isAdmin) {
+      alert("You don't have permission to edit subjects");
+      return;
+    }
+
     if (!subject || !subject._id) {
       alert("Invalid subject data");
       return;
@@ -168,8 +202,13 @@ const Subject = () => {
     }));
   };
 
-  // Add Subject Functionality
+  // Add Subject Functionality - Only Admin
   const handleAddSubject = async () => {
+    if (!isAdmin) {
+      alert("You don't have permission to add subjects");
+      return;
+    }
+
     // Validate required fields
     if (!newSubject.name.trim()) {
       alert("Please enter subject name");
@@ -234,8 +273,13 @@ const Subject = () => {
     }
   };
 
-  // Edit Subject Functionality
+  // Edit Subject Functionality - Only Admin
   const handleEditSubject = async () => {
+    if (!isAdmin) {
+      alert("You don't have permission to edit subjects");
+      return;
+    }
+
     if (!editingSubject) return;
 
     // Validate required fields
@@ -316,7 +360,7 @@ const Subject = () => {
             Subject Management
           </h1>
           <p className="text-lg text-gray-600">
-            Manage course subjects and curriculum information
+            {isAdmin ? "Manage course subjects and curriculum information" : "View course subjects"}
           </p>
         </div>
 
@@ -413,14 +457,17 @@ const Subject = () => {
             >
               Clear Filters
             </button>
-            <button
-              onClick={() => setIsAddModalOpen(true)}
-              disabled={isSubmitting}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center"
-            >
-              <i className="fas fa-plus mr-2"></i>
-              Add Subject
-            </button>
+            {/* ✅ Add Button - Only Admin */}
+            {isAdmin && (
+              <button
+                onClick={() => setIsAddModalOpen(true)}
+                disabled={isSubmitting}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center"
+              >
+                <i className="fas fa-plus mr-2"></i>
+                Add Subject
+              </button>
+            )}
           </div>
         </div>
 
@@ -497,20 +544,31 @@ const Subject = () => {
                   </div>
 
                   <div className="flex justify-between items-center mt-6 pt-4 border-t border-gray-200">
-                    <button
-                      onClick={() => openEditModal(subject)}
-                      className="px-4 py-2 bg-blue-500 text-white-50 rounded-md hover:bg-blue-600"
-                    >
-                      <i className="fas fa-edit mr-2"></i>
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDeleteSubject(subject._id)}
-                      className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600"
-                    >
-                      <i className="fas fa-trash mr-2"></i>
-                      Delete
-                    </button>
+                    {/* ✅ Edit - Only Admin */}
+                    {isAdmin && (
+                      <button
+                        onClick={() => openEditModal(subject)}
+                        className="px-4 py-2 bg-blue-500 text-white-50 rounded-md hover:bg-blue-600"
+                      >
+                        <i className="fas fa-edit mr-2"></i>
+                        Edit
+                      </button>
+                    )}
+                    {/* ✅ Delete - Only Admin */}
+                    {isAdmin && (
+                      <button
+                        onClick={() => handleDeleteSubject(subject._id)}
+                        className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600"
+                      >
+                        <i className="fas fa-trash mr-2"></i>
+                        Delete
+                      </button>
+                    )}
+                    {/* ✅ Faculty - View Only Label */}
+                    {isFaculty && !isAdmin && (
+                      <div className="w-full text-center text-sm text-gray-500">
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -539,14 +597,14 @@ const Subject = () => {
               No subjects yet
             </h3>
             <p className="text-gray-500">
-              Add your first subject using the blue button
+              {isAdmin ? "Add your first subject using the blue button" : "No subjects available"}
             </p>
           </div>
         )}
       </div>
 
-      {/* Add New Subject Modal */}
-      {isAddModalOpen && (
+      {/* ✅ Add New Subject Modal - Only Admin */}
+      {isAddModalOpen && isAdmin && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
             <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-6 rounded-t-lg">
@@ -692,8 +750,8 @@ const Subject = () => {
         </div>
       )}
 
-      {/* Edit Subject Modal */}
-      {isEditModalOpen && editingSubject && (
+      {/* ✅ Edit Subject Modal - Only Admin */}
+      {isEditModalOpen && editingSubject && isAdmin && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
             <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-6 rounded-t-lg">

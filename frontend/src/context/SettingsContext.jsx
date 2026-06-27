@@ -15,8 +15,7 @@ export const SettingsProvider = ({ children }) => {
   const [settings, setSettings] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  const getToken = () => localStorage.getItem("token");
+const token = localStorage.getItem("auth_token");
 
   const applyTheme = (theme) => {
     const root = document.documentElement;
@@ -99,7 +98,7 @@ export const SettingsProvider = ({ children }) => {
 
   const loadSettings = async () => {
     try {
-      const token = getToken();
+     const token = localStorage.getItem("auth_token");
       if (!token) {
         const defaultSettings = {
           theme: localStorage.getItem("theme") || "light",
@@ -150,8 +149,7 @@ export const SettingsProvider = ({ children }) => {
 
   const updateSettings = async (newSettings) => {
     try {
-      const token = getToken();
-      
+      const token = localStorage.getItem("auth_token");
       // Save to localStorage first
       localStorage.setItem("theme", newSettings.theme);
       localStorage.setItem("fontSize", newSettings.fontSize);

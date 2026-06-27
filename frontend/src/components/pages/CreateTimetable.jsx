@@ -1,12 +1,21 @@
+
+// frontend/src/components/pages/Timetable.jsx
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import api from "../../services/api";
 import { facultyAPI } from "../../services/api";
 import Icons from "../../utils/icons";
+import { useAuth } from "../../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const Timetable = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [timetables, setTimetables] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const isAdmin = user?.role === "admin";
+  const isFaculty = user?.role === "faculty";
 
   // Filter states
   const [searchTerm, setSearchTerm] = useState("");
@@ -48,7 +57,7 @@ const Timetable = () => {
   // Schedule entry form
   const [scheduleEntry, setScheduleEntry] = useState({
     day: "Monday",
-    timeSlots: [], // Changed to array for multiple time slots
+    timeSlots: [],
     subject: "",
     faculty: "",
     classroom: "",
@@ -70,7 +79,7 @@ const Timetable = () => {
   // Break entry form
   const [breakEntry, setBreakEntry] = useState({
     day: "Monday",
-    timeSlots: [], // Changed to array for multiple time slots
+    timeSlots: [],
     name: "Lunch Break",
   });
 
@@ -78,8 +87,7 @@ const Timetable = () => {
   const [showParallelForm, setShowParallelForm] = useState(false);
   const [parallelClasses, setParallelClasses] = useState([]);
   const [showTimeSlotDropdown, setShowTimeSlotDropdown] = useState(false);
-  const [showBreakTimeSlotDropdown, setShowBreakTimeSlotDropdown] =
-    useState(false);
+  const [showBreakTimeSlotDropdown, setShowBreakTimeSlotDropdown] = useState(false);
 
   // Filtered data
   const [batchSubjects, setBatchSubjects] = useState([]);
@@ -89,63 +97,16 @@ const Timetable = () => {
 
   // Break suggestions with icons
   const breakSuggestions = [
-    {
-      name: "Lunch Break",
-      icon: Icons.FaUtensils,
-      color: "text-orange-600",
-      bg: "bg-orange-100",
-    },
-    {
-      name: "Tea Break",
-      icon: Icons.FaMugHot,
-      color: "text-amber-600",
-      bg: "bg-amber-100",
-    },
-    {
-      name: "Sports",
-      icon: Icons.FaFutbol,
-      color: "text-green-600",
-      bg: "bg-green-100",
-    },
-    {
-      name: "Library",
-      icon: Icons.FaBookReader,
-      color: "text-purple-600",
-      bg: "bg-purple-100",
-    },
-    {
-      name: "Gym",
-      icon: Icons.FaDumbbell,
-      color: "text-gray-600",
-      bg: "bg-gray-100",
-    },
-    {
-      name: "Music",
-      icon: Icons.FaMusic,
-      color: "text-indigo-600",
-      bg: "bg-indigo-100",
-    },
-    {
-      name: "Yoga",
-      icon: Icons.FaYinYang,
-      color: "text-teal-600",
-      bg: "bg-teal-100",
-    },
-    {
-      name: "Games",
-      icon: Icons.FaGamepad,
-      color: "text-violet-600",
-      bg: "bg-violet-100",
-    },
-    {
-      name: "Snacks",
-      icon: Icons.FaApple,
-      color: "text-red-600",
-      bg: "bg-red-100",
-    },
+    { name: "Lunch Break", icon: Icons.FaUtensils, color: "text-orange-600", bg: "bg-orange-100" },
+    { name: "Tea Break", icon: Icons.FaMugHot, color: "text-amber-600", bg: "bg-amber-100" },
+    { name: "Sports", icon: Icons.FaFutbol, color: "text-green-600", bg: "bg-green-100" },
+    { name: "Library", icon: Icons.FaBookReader, color: "text-purple-600", bg: "bg-purple-100" },
+    { name: "Gym", icon: Icons.FaDumbbell, color: "text-gray-600", bg: "bg-gray-100" },
+    { name: "Music", icon: Icons.FaMusic, color: "text-indigo-600", bg: "bg-indigo-100" },
+    { name: "Yoga", icon: Icons.FaYinYang, color: "text-teal-600", bg: "bg-teal-100" },
+    { name: "Games", icon: Icons.FaGamepad, color: "text-violet-600", bg: "bg-violet-100" },
+    { name: "Snacks", icon: Icons.FaApple, color: "text-red-600", bg: "bg-red-100" },
   ];
-
-  const API_URL = "http://localhost:5000/api";
 
   function getCurrentAcademicYear() {
     const currentYear = new Date().getFullYear();
@@ -157,99 +118,50 @@ const Timetable = () => {
     return `Semester ${semesterNumber}`;
   };
 
-  const daysOfWeek = [
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-    "Saturday",
-  ];
+  const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
   const getNextTimeSlot = (currentSlot) => {
     const index = timeSlotsList.indexOf(currentSlot);
     return timeSlotsList[index + 1];
   };
 
-  const timeSlotRegex =
-    /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]-([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
+  const timeSlotRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]-([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
   const batchDivisionRequiredTypes = ["Lab"];
 
   const getBreakIcon = (breakName) => {
     const name = breakName?.toLowerCase() || "";
-
     if (name.includes("lunch")) {
-      return {
-        icon: Icons.FaUtensils,
-        color: "text-orange-600",
-        bg: "bg-orange-100",
-      };
+      return { icon: Icons.FaUtensils, color: "text-orange-600", bg: "bg-orange-100" };
     } else if (name.includes("tea") || name.includes("coffee")) {
-      return {
-        icon: Icons.FaMugHot,
-        color: "text-amber-600",
-        bg: "bg-amber-100",
-      };
+      return { icon: Icons.FaMugHot, color: "text-amber-600", bg: "bg-amber-100" };
     } else if (name.includes("sport")) {
-      return {
-        icon: Icons.FaFutbol,
-        color: "text-green-600",
-        bg: "bg-green-100",
-      };
+      return { icon: Icons.FaFutbol, color: "text-green-600", bg: "bg-green-100" };
     } else if (name.includes("library")) {
-      return {
-        icon: Icons.FaBookReader,
-        color: "text-purple-600",
-        bg: "bg-purple-100",
-      };
+      return { icon: Icons.FaBookReader, color: "text-purple-600", bg: "bg-purple-100" };
     } else if (name.includes("gym")) {
-      return {
-        icon: Icons.FaDumbbell,
-        color: "text-gray-600",
-        bg: "bg-gray-100",
-      };
+      return { icon: Icons.FaDumbbell, color: "text-gray-600", bg: "bg-gray-100" };
     } else if (name.includes("music")) {
-      return {
-        icon: Icons.FaMusic,
-        color: "text-indigo-600",
-        bg: "bg-indigo-100",
-      };
+      return { icon: Icons.FaMusic, color: "text-indigo-600", bg: "bg-indigo-100" };
     } else if (name.includes("yoga")) {
-      return {
-        icon: Icons.FaYinYang,
-        color: "text-teal-600",
-        bg: "bg-teal-100",
-      };
+      return { icon: Icons.FaYinYang, color: "text-teal-600", bg: "bg-teal-100" };
     } else if (name.includes("game")) {
-      return {
-        icon: Icons.FaGamepad,
-        color: "text-violet-600",
-        bg: "bg-violet-100",
-      };
+      return { icon: Icons.FaGamepad, color: "text-violet-600", bg: "bg-violet-100" };
     } else if (name.includes("snack")) {
-      return {
-        icon: Icons.FaApple,
-        color: "text-red-600",
-        bg: "bg-red-100",
-      };
+      return { icon: Icons.FaApple, color: "text-red-600", bg: "bg-red-100" };
     } else {
-      return {
-        icon: Icons.FaCoffee,
-        color: "text-brown-600",
-        bg: "bg-brown-100",
-      };
+      return { icon: Icons.FaCoffee, color: "text-brown-600", bg: "bg-brown-100" };
     }
   };
 
+  // ✅ Fetch all data with api
   const fetchAllData = async () => {
     try {
       setLoading(true);
 
-      const timetablesRes = await axios.get(`${API_URL}/timetables`);
-      const timetablesData =
-        timetablesRes.data?.data || timetablesRes.data || [];
+      const timetablesRes = await api.get('/timetables');
+      const timetablesData = timetablesRes.data?.data || timetablesRes.data || [];
 
-      const batchesRes = await axios.get(`${API_URL}/batches`);
+      const batchesRes = await api.get('/batches');
       let batchesData = [];
       if (batchesRes.data?.data) {
         batchesData = batchesRes.data.data;
@@ -257,9 +169,8 @@ const Timetable = () => {
         batchesData = batchesRes.data;
       }
 
-      const classroomsRes = await axios.get(`${API_URL}/classrooms`);
-      const classroomsData =
-        classroomsRes.data?.data || classroomsRes.data || [];
+      const classroomsRes = await api.get('/classrooms');
+      const classroomsData = classroomsRes.data?.data || classroomsRes.data || [];
 
       let facultiesData = [];
       try {
@@ -275,7 +186,7 @@ const Timetable = () => {
         console.error("Error fetching faculty:", facultyErr);
       }
 
-      const subjectsRes = await axios.get(`${API_URL}/subjects`);
+      const subjectsRes = await api.get('/subjects');
       const subjectsData = subjectsRes.data?.data || subjectsRes.data || [];
 
       const formattedSubjects = subjectsData.map((subject) => ({
@@ -292,15 +203,28 @@ const Timetable = () => {
       setError(null);
     } catch (err) {
       console.error("Error fetching data:", err);
-      setError(`Failed to load data: ${err.message}`);
+      if (err.response?.status === 401) {
+        setError("Session expired. Please login again.");
+        setTimeout(() => {
+          localStorage.removeItem("auth_token");
+          window.location.href = "/login";
+        }, 2000);
+      } else {
+        setError(`Failed to load data: ${err.message}`);
+      }
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
+    // ✅ Faculty can view, Admin can view
+    if (!isAdmin && !isFaculty) {
+      navigate('/dashboard');
+      return;
+    }
     fetchAllData();
-  }, []);
+  }, [isAdmin, isFaculty]);
 
   useEffect(() => {
     if (newTimetable.batch) {
@@ -329,10 +253,7 @@ const Timetable = () => {
                 sub.semester === `Semester ${currentSemester}`,
             );
           }
-        } else if (
-          selectedBatch.subjects &&
-          Array.isArray(selectedBatch.subjects)
-        ) {
+        } else if (selectedBatch.subjects && Array.isArray(selectedBatch.subjects)) {
           subjectsForBatch = selectedBatch.subjects;
         }
 
@@ -368,19 +289,13 @@ const Timetable = () => {
 
   useEffect(() => {
     if (scheduleEntry.subject) {
-      const selectedSubject = subjects.find(
-        (s) => s._id === scheduleEntry.subject,
-      );
-
+      const selectedSubject = subjects.find((s) => s._id === scheduleEntry.subject);
       if (!selectedSubject) {
         setFilteredFaculty([]);
         return;
       }
 
-      const subjectCode =
-        selectedSubject.subjectCode ||
-        selectedSubject.code ||
-        selectedSubject.name;
+      const subjectCode = selectedSubject.subjectCode || selectedSubject.code || selectedSubject.name;
 
       const facultyForSubject = faculties.filter(
         (faculty) =>
@@ -391,7 +306,6 @@ const Timetable = () => {
       );
 
       setFilteredFaculty(facultyForSubject);
-
       setScheduleEntry((prev) => ({
         ...prev,
         faculty: "",
@@ -403,19 +317,13 @@ const Timetable = () => {
 
   useEffect(() => {
     if (parallelEntry.subject) {
-      const selectedSubject = subjects.find(
-        (s) => s._id === parallelEntry.subject,
-      );
-
+      const selectedSubject = subjects.find((s) => s._id === parallelEntry.subject);
       if (!selectedSubject) {
         setFilteredParallelFaculty([]);
         return;
       }
 
-      const subjectCode =
-        selectedSubject.subjectCode ||
-        selectedSubject.code ||
-        selectedSubject.name;
+      const subjectCode = selectedSubject.subjectCode || selectedSubject.code || selectedSubject.name;
 
       const facultyForSubject = faculties.filter(
         (faculty) =>
@@ -426,7 +334,6 @@ const Timetable = () => {
       );
 
       setFilteredParallelFaculty(facultyForSubject);
-
       setParallelEntry((prev) => ({
         ...prev,
         faculty: "",
@@ -486,8 +393,7 @@ const Timetable = () => {
     const b3Size = Math.max(0, totalStudents - 50);
 
     if (division === "B1") return Math.min(b1Size, totalStudents);
-    if (division === "B2")
-      return totalStudents > 25 ? Math.min(b2Size, totalStudents - 25) : 0;
+    if (division === "B2") return totalStudents > 25 ? Math.min(b2Size, totalStudents - 25) : 0;
     if (division === "B3") return b3Size;
 
     return 0;
@@ -648,32 +554,19 @@ const Timetable = () => {
   };
 
   const addParallelClass = () => {
-    if (
-      !parallelEntry.subject ||
-      !parallelEntry.faculty ||
-      !parallelEntry.classroom
-    ) {
+    if (!parallelEntry.subject || !parallelEntry.faculty || !parallelEntry.classroom) {
       alert("Please fill all fields for parallel class");
       return;
     }
 
-    if (
-      batchDivisionRequiredTypes.includes(parallelEntry.type) &&
-      !parallelEntry.batchDivision
-    ) {
+    if (batchDivisionRequiredTypes.includes(parallelEntry.type) && !parallelEntry.batchDivision) {
       alert("Batch division is required for Lab classes");
       return;
     }
 
-    const selectedSubject = subjects.find(
-      (s) => s._id === parallelEntry.subject,
-    );
-    const selectedFaculty = faculties.find(
-      (f) => f._id === parallelEntry.faculty,
-    );
-    const selectedClassroom = classrooms.find(
-      (c) => c._id === parallelEntry.classroom,
-    );
+    const selectedSubject = subjects.find((s) => s._id === parallelEntry.subject);
+    const selectedFaculty = faculties.find((f) => f._id === parallelEntry.faculty);
+    const selectedClassroom = classrooms.find((c) => c._id === parallelEntry.classroom);
 
     if (!selectedSubject || !selectedFaculty || !selectedClassroom) {
       alert("Selected options not found");
@@ -722,7 +615,6 @@ const Timetable = () => {
     setParallelClasses(parallelClasses.filter((pc) => pc.id !== id));
   };
 
-  // Handle time slot checkbox changes for schedule
   const handleTimeSlotChange = (timeSlot) => {
     setScheduleEntry((prev) => {
       const newTimeSlots = prev.timeSlots.includes(timeSlot)
@@ -732,7 +624,6 @@ const Timetable = () => {
     });
   };
 
-  // Handle time slot checkbox changes for break
   const handleBreakTimeSlotChange = (timeSlot) => {
     setBreakEntry((prev) => {
       const newTimeSlots = prev.timeSlots.includes(timeSlot)
@@ -748,7 +639,6 @@ const Timetable = () => {
       return;
     }
 
-    // Validate each selected time slot
     for (const timeSlot of scheduleEntry.timeSlots) {
       if (!isValidTimeSlot(timeSlot)) {
         alert(`Invalid time slot format: ${timeSlot}`);
@@ -763,15 +653,11 @@ const Timetable = () => {
       }
     }
 
-    if (
-      batchDivisionRequiredTypes.includes(scheduleEntry.type) &&
-      !scheduleEntry.batchDivision
-    ) {
+    if (batchDivisionRequiredTypes.includes(scheduleEntry.type) && !scheduleEntry.batchDivision) {
       alert("Batch division is required for Lab classes");
       return;
     }
 
-    // Create separate entries for each selected time slot
     const newEntries = scheduleEntry.timeSlots.map((timeSlot, index) => ({
       _id: `main-${Date.now().toString()}-${index}`,
       day: scheduleEntry.day,
@@ -844,7 +730,6 @@ const Timetable = () => {
       return;
     }
 
-    // Validate each selected time slot
     for (const timeSlot of breakEntry.timeSlots) {
       if (!isValidTimeSlot(timeSlot)) {
         alert(`Invalid time slot format: ${timeSlot}`);
@@ -859,7 +744,6 @@ const Timetable = () => {
       }
     }
 
-    // Create separate break entries for each selected time slot
     const newBreaks = breakEntry.timeSlots.map((timeSlot, index) => ({
       _id: `break-${Date.now().toString()}-${index}`,
       day: breakEntry.day,
@@ -899,11 +783,15 @@ const Timetable = () => {
     });
   };
 
+  // ✅ Edit Timetable - Only Admin
   const editTimetable = async (timetable) => {
+    if (!isAdmin) {
+      alert("You don't have permission to edit timetables");
+      return;
+    }
+
     try {
-      const response = await axios.get(
-        `${API_URL}/timetables/${timetable._id}`,
-      );
+      const response = await api.get(`/timetables/${timetable._id}`);
       const fullTimetable = response.data?.data || response.data;
 
       const formattedSchedule = (fullTimetable.schedule || []).map((entry) => ({
@@ -972,12 +860,18 @@ const Timetable = () => {
 
       setShowCreateModal(true);
     } catch (err) {
-      console.error("Error fetching timetable for edit:", err);
+      console.error("Error fetching timetable for editing:", err);
       alert("Failed to load timetable for editing");
     }
   };
 
+  // ✅ Create/Update Timetable - Only Admin
   const createTimetable = async () => {
+    if (!isAdmin) {
+      alert("You don't have permission to create timetables");
+      return;
+    }
+
     if (!newTimetable.name || !newTimetable.batch) {
       alert("Please fill all required fields");
       return;
@@ -1035,13 +929,10 @@ const Timetable = () => {
 
       let response;
       if (newTimetable._id) {
-        response = await axios.put(
-          `${API_URL}/timetables/${newTimetable._id}`,
-          timetableData,
-        );
+        response = await api.put(`/timetables/${newTimetable._id}`, timetableData);
         alert("Timetable updated successfully!");
       } else {
-        response = await axios.post(`${API_URL}/timetables`, timetableData);
+        response = await api.post('/timetables', timetableData);
         alert("Timetable created successfully!");
       }
 
@@ -1060,15 +951,20 @@ const Timetable = () => {
       await fetchAllData();
     } catch (err) {
       console.error("Error saving timetable:", err);
-      alert(err.response?.data?.message || "Failed to save timetable");
+      if (err.response?.status === 401) {
+        alert("Session expired. Please login again.");
+        localStorage.removeItem("auth_token");
+        window.location.href = "/login";
+      } else {
+        alert(err.response?.data?.message || "Failed to save timetable");
+      }
     }
   };
 
+  // ✅ View Timetable
   const viewTimetable = async (timetable) => {
     try {
-      const response = await axios.get(
-        `${API_URL}/timetables/${timetable._id}`,
-      );
+      const response = await api.get(`/timetables/${timetable._id}`);
       const fullTimetable = response.data?.data || response.data;
       setSelectedTimetable(fullTimetable);
       setShowViewModal(true);
@@ -1078,10 +974,16 @@ const Timetable = () => {
     }
   };
 
+  // ✅ Delete Timetable - Only Admin
   const deleteTimetable = async (id) => {
+    if (!isAdmin) {
+      alert("You don't have permission to delete timetables");
+      return;
+    }
+
     if (window.confirm("Are you sure you want to delete this timetable?")) {
       try {
-        await axios.delete(`${API_URL}/timetables/${id}`);
+        await api.delete(`/timetables/${id}`);
         alert("Timetable deleted successfully!");
         fetchAllData();
       } catch (err) {
@@ -1135,7 +1037,6 @@ const Timetable = () => {
       ? classrooms.filter((c) => c.type === "Lab")
       : classrooms.filter((c) => c.type !== "Lab");
 
-  // Filter classrooms for parallel classes - SAME AS MAIN SCHEDULE
   const filteredParallelClassrooms =
     parallelEntry.type === "Lab"
       ? classrooms.filter((c) => c.type === "Lab")
@@ -1163,6 +1064,41 @@ const Timetable = () => {
     );
   }
 
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-24">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6 text-center">
+            <i className="fas fa-exclamation-triangle text-4xl text-red-500 mb-4"></i>
+            <h3 className="text-lg font-semibold text-red-800 dark:text-red-400 mb-2">
+              {error.includes('expired') ? 'Session Expired' : 'Error Loading Data'}
+            </h3>
+            <p className="text-red-600 dark:text-red-300">{error}</p>
+            <div className="mt-4 flex gap-3 justify-center">
+              <button
+                onClick={fetchAllData}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+              >
+                Retry
+              </button>
+              {error.includes('expired') && (
+                <button
+                  onClick={() => {
+                    localStorage.removeItem("auth_token");
+                    window.location.href = "/login";
+                  }}
+                  className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+                >
+                  Go to Login
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -1172,7 +1108,7 @@ const Timetable = () => {
             Timetable Management
           </h1>
           <p className="text-lg text-gray-600">
-            Create and manage class schedules for different batches
+            {isAdmin ? "Create and manage class schedules" : "View class schedules"}
           </p>
         </div>
 
@@ -1202,7 +1138,8 @@ const Timetable = () => {
                   className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
-            </div><div>
+            </div>
+            <div>
               <label className="block text-sm font-medium text-gray-600 mb-1">
                 Semester
               </label>
@@ -1229,13 +1166,16 @@ const Timetable = () => {
               Clear Filters
             </button>
             <div className="flex items-center space-x-3">
-              <button
-                onClick={() => setShowCreateModal(true)}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center"
-              >
-                <i className="fas fa-plus mr-2"></i>
-                New Timetable
-              </button>
+              {/* ✅ New Timetable Button - Only Admin */}
+              {isAdmin && (
+                <button
+                  onClick={() => setShowCreateModal(true)}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center"
+                >
+                  <i className="fas fa-plus mr-2"></i>
+                  New Timetable
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -1330,6 +1270,7 @@ const Timetable = () => {
                 </div>
 
                 <div className="p-4 bg-gray-50 border-t flex justify-between gap-2">
+                  {/* ✅ View - Everyone */}
                   <button
                     onClick={() => viewTimetable(timetable)}
                     className="flex-1 px-3 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 text-sm"
@@ -1337,20 +1278,35 @@ const Timetable = () => {
                     <i className="fa-solid fa-eye mr-2"></i>
                     View
                   </button>
-                  <button
-                    onClick={() => editTimetable(timetable)}
-                    className="flex-1 px-3 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-sm"
-                  >
-                    <i className="fas fa-edit mr-2"></i>
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => deleteTimetable(timetable._id)}
-                    className="flex-1 px-3 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 text-sm"
-                  >
-                    <i className="fas fa-trash mr-2"></i>
-                    Delete
-                  </button>
+
+                  {/* ✅ Edit - Only Admin */}
+                  {isAdmin && (
+                    <button
+                      onClick={() => editTimetable(timetable)}
+                      className="flex-1 px-3 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-sm"
+                    >
+                      <i className="fas fa-edit mr-2"></i>
+                      Edit
+                    </button>
+                  )}
+
+                  {/* ✅ Delete - Only Admin */}
+                  {isAdmin && (
+                    <button
+                      onClick={() => deleteTimetable(timetable._id)}
+                      className="flex-1 px-3 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 text-sm"
+                    >
+                      <i className="fas fa-trash mr-2"></i>
+                      Delete
+                    </button>
+                  )}
+
+                  {/* ✅ Faculty - View Only Label */}
+                  {isFaculty && !isAdmin && (
+                    <div className="flex-1 text-center text-sm text-gray-500 py-2">
+                    
+                    </div>
+                  )}
                 </div>
               </div>
             );
@@ -1377,15 +1333,16 @@ const Timetable = () => {
               No timetables yet
             </h3>
             <p className="text-gray-500">
-              Create your first timetable using the button above
+              {isAdmin ? "Create your first timetable using the button above" : "No timetables available"}
             </p>
           </div>
         )}
       </div>
 
-      {/* Create/Edit Timetable Modal */}
-      {showCreateModal && (
+      {/* Create/Edit Timetable Modal - Only Admin */}
+      {showCreateModal && isAdmin && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          {/* ... (rest of modal code remains same) ... */}
           <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
             <div className="bg-blue-600 p-6">
               <h2 className="text-2xl font-bold text-white">
@@ -2096,7 +2053,7 @@ const Timetable = () => {
         </div>
       )}
 
-      {/* View Timetable Modal with Consistent Time Slots */}
+      {/* View Timetable Modal */}
       {showViewModal && selectedTimetable && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg shadow-xl max-w-6xl w-full max-h-[90vh] overflow-y-auto">
@@ -2139,10 +2096,8 @@ const Timetable = () => {
                             const entries = allEntries.filter(
                               (e) => e.timeSlot === timeSlot,
                             );
-                            // find current entry
                             const currentEntry = entries[0];
 
-                            // check if previous slot has same subject (for skip)
                             const prevSlot =
                               timeSlotsList[
                                 timeSlotsList.indexOf(timeSlot) - 1
@@ -2155,7 +2110,6 @@ const Timetable = () => {
                                 e.day === day,
                             );
 
-                            // check next slot for rowspan
                             const nextSlot = getNextTimeSlot(timeSlot);
 
                             const nextEntry = allEntries.find(
@@ -2200,7 +2154,6 @@ const Timetable = () => {
                                           key={idx}
                                           className="h-full flex flex-col justify-center"
                                         >
-                                          {/* Main Class */}
                                           {entry.subject && (
                                             <div className="p-2 bg-blue-100 rounded mb-1 mt-1 mx-1 ">
                                               <div className="flex justify-between items-center border border-blue-300 rounded px-2 py-1 bg-white">
@@ -2231,7 +2184,6 @@ const Timetable = () => {
                                             </div>
                                           )}
 
-                                          {/* Parallel Classes */}
                                           {entry.parallelClasses &&
                                             entry.parallelClasses.length >
                                               0 && (

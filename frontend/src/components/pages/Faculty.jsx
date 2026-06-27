@@ -1,10 +1,14 @@
+// frontend/src/components/pages/Faculty.jsx
 import React, { useState, useEffect } from "react";
 import { facultyAPI } from "../../services/api";
+import { useAuth } from "../../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const Faculty = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedDepartment, setSelectedDepartment] =
-    useState("All Departments");
+  const [selectedDepartment, setSelectedDepartment] = useState("All Departments");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingFaculty, setEditingFaculty] = useState(null);
@@ -14,11 +18,14 @@ const Faculty = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [apiError, setApiError] = useState(null);
 
+  const isAdmin = user?.role === "admin";
+  const isFaculty = user?.role === "faculty";
+
   const [newFaculty, setNewFaculty] = useState({
     name: "",
     email: "",
     department: "Computer Science",
-    facultyId: "", // Added facultyId field
+    facultyId: "",
     subjects: "",
     workload: "",
     building: "",
@@ -40,6 +47,15 @@ const Faculty = () => {
     "Chemical Building",
   ];
 
+  useEffect(() => {
+    // ✅ Faculty can view, Admin can view
+    if (!isAdmin && !isFaculty) {
+      navigate('/dashboard');
+      return;
+    }
+    fetchFaculty();
+  }, [isAdmin, isFaculty]);
+
   // Fetch faculty from API
   const fetchFaculty = async () => {
     try {
@@ -47,7 +63,6 @@ const Faculty = () => {
       setError(null);
       const response = await facultyAPI.getAll();
 
-      // Handle different response structures
       let facultyData = [];
       if (response.data) {
         if (Array.isArray(response.data.data)) {
@@ -59,19 +74,13 @@ const Faculty = () => {
 
       setFacultyMembers(facultyData);
     } catch (err) {
-      const errorMessage =
-        err.response?.data?.message ||
-        "Failed to fetch faculty. Please try again.";
+      const errorMessage = err.response?.data?.message || "Failed to fetch faculty. Please try again.";
       setError(errorMessage);
       console.error("Error fetching faculty:", err);
     } finally {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    fetchFaculty();
-  }, []);
 
   // Filter faculty based on search and department
   const filteredFaculty = facultyMembers.filter((faculty) => {
@@ -98,13 +107,11 @@ const Faculty = () => {
     return matchesSearch && matchesDepartment;
   });
 
-  // Clear filters function
   const clearFilters = () => {
     setSearchTerm("");
     setSelectedDepartment("All Departments");
   };
 
-  // Helper function to format subjects for display
   const formatSubjects = (subjects) => {
     if (!subjects) return "";
     if (Array.isArray(subjects)) return subjects.join(", ");
@@ -112,7 +119,6 @@ const Faculty = () => {
     return "";
   };
 
-  // Helper function to prepare subjects for API
   const prepareSubjects = (subjectsString) => {
     if (!subjectsString || typeof subjectsString !== "string") return [];
     return subjectsString
@@ -121,9 +127,13 @@ const Faculty = () => {
       .filter((s) => s.length > 0);
   };
 
-  // Add Faculty Functionality
+  // Add Faculty Functionality - Only Admin
   const handleAddFaculty = async () => {
-    // Validate required fields
+    if (!isAdmin) {
+      alert("You don't have permission to add faculty");
+      return;
+    }
+
     if (!newFaculty.name.trim()) {
       alert("Please enter faculty name");
       return;
@@ -145,12 +155,11 @@ const Faculty = () => {
     setApiError(null);
 
     try {
-      // Prepare data for API
       const facultyData = {
         name: newFaculty.name.trim(),
         email: newFaculty.email.trim(),
         department: newFaculty.department,
-        facultyId: newFaculty.facultyId.trim(), // Include facultyId
+        facultyId: newFaculty.facultyId.trim(),
         workload: parseInt(newFaculty.workload),
         building: newFaculty.building || "",
         officeHours: newFaculty.officeHours || "",
@@ -158,20 +167,14 @@ const Faculty = () => {
         subjects: prepareSubjects(newFaculty.subjects),
       };
 
-      console.log("Adding faculty with data:", facultyData);
-
-      const response = await facultyAPI.create(facultyData);
-      console.log("Faculty added successfully:", response.data);
-
-      // Refresh the list
+      await facultyAPI.create(facultyData);
       await fetchFaculty();
 
-      // Reset form
       setNewFaculty({
         name: "",
         email: "",
         department: "Computer Science",
-        facultyId: "", // Reset facultyId
+        facultyId: "",
         subjects: "",
         workload: "",
         building: "",
@@ -183,12 +186,8 @@ const Faculty = () => {
       alert("Faculty added successfully!");
     } catch (err) {
       console.error("Error adding faculty:", err);
-
-      // Extract error message
       let errorMessage = "Failed to add faculty. Please try again.";
-
       if (err.response?.data) {
-        // Handle validation errors
         if (err.response.data.errors) {
           const errors = err.response.data.errors;
           errorMessage = Object.values(errors)
@@ -200,7 +199,6 @@ const Faculty = () => {
       } else if (err.message) {
         errorMessage = err.message;
       }
-
       setApiError(errorMessage);
       alert(`Error: ${errorMessage}`);
     } finally {
@@ -208,11 +206,15 @@ const Faculty = () => {
     }
   };
 
-  // Edit Faculty Functionality
+  // Edit Faculty Functionality - Only Admin
   const handleEditFaculty = async () => {
+    if (!isAdmin) {
+      alert("You don't have permission to edit faculty");
+      return;
+    }
+
     if (!editingFaculty) return;
 
-    // Validate required fields
     if (!editingFaculty.name?.trim()) {
       alert("Please enter faculty name");
       return;
@@ -234,12 +236,11 @@ const Faculty = () => {
     setApiError(null);
 
     try {
-      // Prepare data for API
       const facultyData = {
         name: editingFaculty.name.trim(),
         email: editingFaculty.email.trim(),
         department: editingFaculty.department,
-        facultyId: editingFaculty.facultyId.trim(), // Include facultyId
+        facultyId: editingFaculty.facultyId.trim(),
         workload: parseInt(editingFaculty.workload),
         building: editingFaculty.building || "",
         officeHours: editingFaculty.officeHours || "",
@@ -247,12 +248,7 @@ const Faculty = () => {
         subjects: prepareSubjects(editingFaculty.subjects),
       };
 
-      console.log("Updating faculty with data:", facultyData);
-
-      const response = await facultyAPI.update(editingFaculty._id, facultyData);
-      console.log("Faculty updated successfully:", response.data);
-
-      // Refresh the list
+      await facultyAPI.update(editingFaculty._id, facultyData);
       await fetchFaculty();
 
       setIsEditModalOpen(false);
@@ -260,10 +256,7 @@ const Faculty = () => {
       alert("Faculty updated successfully!");
     } catch (err) {
       console.error("Error updating faculty:", err);
-
-      // Extract error message
       let errorMessage = "Failed to update faculty. Please try again.";
-
       if (err.response?.data) {
         if (err.response.data.errors) {
           const errors = err.response.data.errors;
@@ -276,7 +269,6 @@ const Faculty = () => {
       } else if (err.message) {
         errorMessage = err.message;
       }
-
       setApiError(errorMessage);
       alert(`Error: ${errorMessage}`);
     } finally {
@@ -284,41 +276,43 @@ const Faculty = () => {
     }
   };
 
-  // Delete Faculty Functionality
+  // Delete Faculty Functionality - Only Admin
   const handleDeleteFaculty = async (id) => {
+    if (!isAdmin) {
+      alert("You don't have permission to delete faculty");
+      return;
+    }
+
     if (!id) {
       alert("Invalid faculty ID");
       return;
     }
 
-    if (
-      !window.confirm("Are you sure you want to delete this faculty member?")
-    ) {
+    if (!window.confirm("Are you sure you want to delete this faculty member?")) {
       return;
     }
 
     try {
-      console.log("Deleting faculty with ID:", id);
-      const response = await facultyAPI.delete(id);
-      console.log("Faculty deleted successfully:", response.data);
-
-      // Refresh the list
+      await facultyAPI.delete(id);
       await fetchFaculty();
       alert("Faculty deleted successfully!");
     } catch (err) {
       console.error("Error deleting faculty:", err);
-
       let errorMessage = "Failed to delete faculty. Please try again.";
       if (err.response?.data?.message) {
         errorMessage = err.response.data.message;
       }
-
       alert(`Error: ${errorMessage}`);
     }
   };
 
-  // Open Edit Modal
+  // Open Edit Modal - Only Admin
   const openEditModal = (faculty) => {
+    if (!isAdmin) {
+      alert("You don't have permission to edit faculty");
+      return;
+    }
+
     if (!faculty || !faculty._id) {
       alert("Invalid faculty data");
       return;
@@ -331,7 +325,6 @@ const Faculty = () => {
     setIsEditModalOpen(true);
   };
 
-  // Close Modals
   const closeModals = () => {
     setIsAddModalOpen(false);
     setIsEditModalOpen(false);
@@ -355,7 +348,6 @@ const Faculty = () => {
     }));
   };
 
-  // Loading state
   if (loading && facultyMembers.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50 pt-24 flex items-center justify-center">
@@ -369,7 +361,6 @@ const Faculty = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Main Content with extra top padding to avoid navbar overlap */}
       <div className="max-w-7xl mx-auto">
         {/* Header Section */}
         <div className="pt-24 text-center mb-8">
@@ -377,7 +368,7 @@ const Faculty = () => {
             Faculty Management
           </h1>
           <p className="text-lg text-gray-600">
-            Manage faculty members, workloads, and teaching assignments
+            {isAdmin ? "Manage faculty members, workloads, and teaching assignments" : "View faculty members"}
           </p>
         </div>
 
@@ -386,10 +377,7 @@ const Faculty = () => {
           <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-md">
             <div className="flex justify-between items-center">
               <span>{apiError}</span>
-              <button
-                onClick={() => setApiError(null)}
-                className="text-red-700 hover:text-red-900"
-              >
+              <button onClick={() => setApiError(null)} className="text-red-700 hover:text-red-900">
                 ×
               </button>
             </div>
@@ -400,10 +388,7 @@ const Faculty = () => {
         <div className="bg-white rounded-lg shadow-md p-4 md:p-6 mb-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="md:col-span-2">
-              <label
-                htmlFor="search"
-                className="block text-sm font-medium text-gray-600 mb-1"
-              >
+              <label htmlFor="search" className="block text-sm font-medium text-gray-600 mb-1">
                 Search faculty...
               </label>
               <input
@@ -417,10 +402,7 @@ const Faculty = () => {
             </div>
 
             <div>
-              <label
-                htmlFor="department"
-                className="block text-sm font-medium text-gray-600 mb-1"
-              >
+              <label htmlFor="department" className="block text-sm font-medium text-gray-600 mb-1">
                 Department
               </label>
               <select
@@ -442,18 +424,21 @@ const Faculty = () => {
           <div className="mt-4 flex justify-between items-center">
             <button
               onClick={clearFilters}
-              className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200"
             >
               Clear Filters
             </button>
-            <button
-              onClick={() => setIsAddModalOpen(true)}
-              disabled={isSubmitting}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center"
-            >
-              <i className="fas fa-plus mr-2"></i>
-              Add Faculty
-            </button>
+            {/* ✅ Add Button - Only Admin */}
+            {isAdmin && (
+              <button
+                onClick={() => setIsAddModalOpen(true)}
+                disabled={isSubmitting}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center"
+              >
+                <i className="fas fa-plus mr-2"></i>
+                Add Faculty
+              </button>
+            )}
           </div>
         </div>
 
@@ -461,13 +446,8 @@ const Faculty = () => {
         {error && facultyMembers.length === 0 && (
           <div className="text-center py-12">
             <i className="fas fa-exclamation-triangle text-6xl text-red-500 mb-4"></i>
-            <h3 className="text-xl font-semibold text-gray-600 mb-2">
-              {error}
-            </h3>
-            <button
-              onClick={fetchFaculty}
-              className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
-            >
+            <h3 className="text-xl font-semibold text-gray-600 mb-2">{error}</h3>
+            <button onClick={fetchFaculty} className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
               Retry Loading
             </button>
           </div>
@@ -484,15 +464,13 @@ const Faculty = () => {
                 <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-4">
                   <div className="flex justify-between items-start">
                     <h3 className="text-xl font-bold text-white">
-                      {faculty.facultyId || "No Name"}
+                      {faculty.facultyId || "No ID"}
                     </h3>
                     <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-semibold">
-                      {faculty.building || "No Department"}
+                      {faculty.department || "No Department"}
                     </span>
                   </div>
-                  <p className="text-blue-100 mt-1">
-                    {faculty.name || "No building assigned"}
-                  </p>
+                  <p className="text-blue-100 mt-1">{faculty.name || "No Name"}</p>
                 </div>
 
                 <div className="p-4">
@@ -500,31 +478,14 @@ const Faculty = () => {
                     <div className="flex items-center">
                       <i className="fas fa-envelope text-gray-400 w-5"></i>
                       <span className="ml-2 text-gray-600">
-                      <strong>Email:</strong> {faculty.email || "No email"}
+                        <strong>Email:</strong> {faculty.email || "No email"}
                       </span>
                     </div>
-
-                    <div className="flex items-center">
-                      <i className="fas fa-id-card text-gray-400 w-5"></i>
-                      <span className="ml-2 text-gray-600">
-                        <strong>Department:</strong> {faculty.department || "Not assigned"}
-                      </span>
-                    </div>
-
-                    {faculty.phone && (
-                      <div className="flex items-center">
-                        <i className="fas fa-phone text-gray-400 w-5"></i>
-                        <span className="ml-2 text-gray-600">
-                          <strong>Mobile No:</strong> {faculty.phone}
-                        </span>
-                      </div>
-                    )}
 
                     <div className="flex items-center">
                       <i className="fas fa-clock text-gray-400 w-5"></i>
                       <span className="ml-2 text-gray-600">
-                        <strong>Workload:</strong> {faculty.workload || 0}{" "}
-                        hours/week
+                        <strong>Workload:</strong> {faculty.workload || 0} hours/week
                       </span>
                     </div>
 
@@ -536,10 +497,7 @@ const Faculty = () => {
                           <div className="flex flex-wrap gap-1 mt-1">
                             {Array.isArray(faculty.subjects) ? (
                               faculty.subjects.map((subject, index) => (
-                                <span
-                                  key={index}
-                                  className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded"
-                                >
+                                <span key={index} className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">
                                   {subject}
                                 </span>
                               ))
@@ -552,34 +510,33 @@ const Faculty = () => {
                         </div>
                       </div>
                     )}
-
-                    {faculty.officeHours && (
-                      <div className="flex items-center">
-                        <i className="fas fa-door-open text-gray-400 w-5"></i>
-                        <span className="ml-2 text-gray-700">
-                          <strong>Office Hours:</strong> {faculty.officeHours}
-                        </span>
-                      </div>
-                    )}
                   </div>
 
-                  <div className="flex justify-between items-center mt-6 pt-4 border-t border-gray-200">
-                    <button
-                      onClick={() => openEditModal(faculty)}
-                      className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                      disabled={isSubmitting}
-                    >
-                      <i className="fas fa-edit mr-2"></i>
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDeleteFaculty(faculty._id)}
-                      className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                      disabled={isSubmitting}
-                    >
-                      <i className="fas fa-trash mr-2"></i>
-                      Delete
-                    </button>
+                  <div className="flex justify-between items-center mt-4 pt-4 border-t border-gray-200">
+                    {/* ✅ Edit/Delete - Only Admin */}
+                    {isAdmin && (
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => openEditModal(faculty)}
+                          className="px-3 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-sm"
+                          disabled={isSubmitting}
+                        >
+                          <i className="fas fa-edit"></i>
+                        </button>
+                        <button
+                          onClick={() => handleDeleteFaculty(faculty._id)}
+                          className="px-3 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 text-sm"
+                          disabled={isSubmitting}
+                        >
+                          <i className="fas fa-trash"></i>
+                        </button>
+                      </div>
+                    )}
+                    {/* ✅ Faculty - View Only */}
+                    {isFaculty && (
+                      <div className="w-full text-center text-sm text-gray-500">
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -588,36 +545,27 @@ const Faculty = () => {
         )}
 
         {/* Empty State */}
-        {!error &&
-          filteredFaculty.length === 0 &&
-          facultyMembers.length > 0 && (
-            <div className="text-center py-12">
-              <i className="fas fa-user-graduate text-6xl text-gray-300 mb-4"></i>
-              <h3 className="text-xl font-semibold text-gray-600">
-                No faculty members found
-              </h3>
-              <p className="text-gray-500">
-                Try adjusting your search or filters
-              </p>
-            </div>
-          )}
+        {!error && filteredFaculty.length === 0 && facultyMembers.length > 0 && (
+          <div className="text-center py-12">
+            <i className="fas fa-user-graduate text-6xl text-gray-300 mb-4"></i>
+            <h3 className="text-xl font-semibold text-gray-600">No faculty members found</h3>
+            <p className="text-gray-500">Try adjusting your search or filters</p>
+          </div>
+        )}
 
-        {/* No Faculty State */}
         {!error && facultyMembers.length === 0 && (
           <div className="text-center py-12">
             <i className="fas fa-users text-6xl text-gray-300 mb-4"></i>
-            <h3 className="text-xl font-semibold text-gray-600">
-              No faculty members yet
-            </h3>
+            <h3 className="text-xl font-semibold text-gray-600">No faculty members yet</h3>
             <p className="text-gray-500">
-             Add your first subject using the blue button
+              {isAdmin ? "Add your first faculty member using the blue button" : "No faculty members available"}
             </p>
           </div>
         )}
       </div>
 
-      {/* Add New Faculty Modal */}
-      {isAddModalOpen && (
+      {/* ✅ Add Faculty Modal - Only Admin */}
+      {isAddModalOpen && isAdmin && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
             <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-6 rounded-t-lg">
@@ -629,9 +577,7 @@ const Faculty = () => {
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-600 mb-1">
-                      Name *
-                    </label>
+                    <label className="block text-sm font-medium text-gray-600 mb-1">Name *</label>
                     <input
                       type="text"
                       name="name"
@@ -644,9 +590,7 @@ const Faculty = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-600 mb-1">
-                      Email *
-                    </label>
+                    <label className="block text-sm font-medium text-gray-600 mb-1">Email *</label>
                     <input
                       type="email"
                       name="email"
@@ -662,9 +606,7 @@ const Faculty = () => {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-600 mb-1">
-                      Department *
-                    </label>
+                    <label className="block text-sm font-medium text-gray-600 mb-1">Department *</label>
                     <select
                       name="department"
                       value={newFaculty.department}
@@ -673,22 +615,18 @@ const Faculty = () => {
                       disabled={isSubmitting}
                     >
                       {departments.map((dept) => (
-                        <option key={dept} value={dept}>
-                          {dept}
-                        </option>
+                        <option key={dept} value={dept}>{dept}</option>
                       ))}
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-600 mb-1">
-                      Faculty ID *
-                    </label>
+                    <label className="block text-sm font-medium text-gray-600 mb-1">Faculty ID *</label>
                     <input
                       type="text"
                       name="facultyId"
                       value={newFaculty.facultyId}
                       onChange={handleInputChange}
-                      placeholder="e.g., FAC001, CS101, 2023001"
+                      placeholder="e.g., FAC001"
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
                       disabled={isSubmitting}
                       required
@@ -697,9 +635,7 @@ const Faculty = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-600 mb-1">
-                    Subjects
-                  </label>
+                  <label className="block text-sm font-medium text-gray-600 mb-1">Subjects</label>
                   <input
                     type="text"
                     name="subjects"
@@ -709,16 +645,12 @@ const Faculty = () => {
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
                     disabled={isSubmitting}
                   />
-                  <p className="text-xs text-gray-500 mt-1">
-                    Separate subjects with commas
-                  </p>
+                  <p className="text-xs text-gray-500 mt-1">Separate subjects with commas</p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-600 mb-1">
-                      Building
-                    </label>
+                    <label className="block text-sm font-medium text-gray-600 mb-1">Building</label>
                     <select
                       name="building"
                       value={newFaculty.building}
@@ -728,16 +660,12 @@ const Faculty = () => {
                     >
                       <option value="">Select Building</option>
                       {buildings.map((building) => (
-                        <option key={building} value={building}>
-                          {building}
-                        </option>
+                        <option key={building} value={building}>{building}</option>
                       ))}
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-600 mb-1">
-                      Phone
-                    </label>
+                    <label className="block text-sm font-medium text-gray-600 mb-1">Phone</label>
                     <input
                       type="text"
                       name="phone"
@@ -751,9 +679,7 @@ const Faculty = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-600 mb-1">
-                    Workload (hours/week) *
-                  </label>
+                  <label className="block text-sm font-medium text-gray-600 mb-1">Workload (hours/week) *</label>
                   <input
                     type="number"
                     name="workload"
@@ -773,14 +699,14 @@ const Faculty = () => {
             <div className="bg-gray-50 px-6 py-4 rounded-b-lg flex justify-end space-x-3">
               <button
                 onClick={closeModals}
-                className="px-4 py-2 text-gray-600 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2 text-gray-600 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 disabled:opacity-50"
                 disabled={isSubmitting}
               >
                 Cancel
               </button>
               <button
                 onClick={handleAddFaculty}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 flex items-center"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? (
@@ -797,8 +723,8 @@ const Faculty = () => {
         </div>
       )}
 
-      {/* Edit Faculty Modal */}
-      {isEditModalOpen && editingFaculty && (
+      {/* ✅ Edit Faculty Modal - Only Admin */}
+      {isEditModalOpen && editingFaculty && isAdmin && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
             <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-6 rounded-t-lg">
@@ -810,9 +736,7 @@ const Faculty = () => {
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-600 mb-1">
-                      Name *
-                    </label>
+                    <label className="block text-sm font-medium text-gray-600 mb-1">Name *</label>
                     <input
                       type="text"
                       name="name"
@@ -824,9 +748,7 @@ const Faculty = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-600 mb-1">
-                      Email *
-                    </label>
+                    <label className="block text-sm font-medium text-gray-600 mb-1">Email *</label>
                     <input
                       type="email"
                       name="email"
@@ -841,9 +763,7 @@ const Faculty = () => {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-600 mb-1">
-                      Department *
-                    </label>
+                    <label className="block text-sm font-medium text-gray-600 mb-1">Department *</label>
                     <select
                       name="department"
                       value={editingFaculty.department || ""}
@@ -852,16 +772,12 @@ const Faculty = () => {
                       disabled={isSubmitting}
                     >
                       {departments.map((dept) => (
-                        <option key={dept} value={dept}>
-                          {dept}
-                        </option>
+                        <option key={dept} value={dept}>{dept}</option>
                       ))}
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-600 mb-1">
-                      Faculty ID *
-                    </label>
+                    <label className="block text-sm font-medium text-gray-600 mb-1">Faculty ID *</label>
                     <input
                       type="text"
                       name="facultyId"
@@ -875,9 +791,7 @@ const Faculty = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-600 mb-1">
-                    Subjects
-                  </label>
+                  <label className="block text-sm font-medium text-gray-600 mb-1">Subjects</label>
                   <input
                     type="text"
                     name="subjects"
@@ -886,16 +800,12 @@ const Faculty = () => {
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
                     disabled={isSubmitting}
                   />
-                  <p className="text-xs text-gray-500 mt-1">
-                    Separate subjects with commas
-                  </p>
+                  <p className="text-xs text-gray-500 mt-1">Separate subjects with commas</p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-600 mb-1">
-                      Building
-                    </label>
+                    <label className="block text-sm font-medium text-gray-600 mb-1">Building</label>
                     <select
                       name="building"
                       value={editingFaculty.building || ""}
@@ -905,16 +815,12 @@ const Faculty = () => {
                     >
                       <option value="">Select Building</option>
                       {buildings.map((building) => (
-                        <option key={building} value={building}>
-                          {building}
-                        </option>
+                        <option key={building} value={building}>{building}</option>
                       ))}
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-600 mb-1">
-                      Phone
-                    </label>
+                    <label className="block text-sm font-medium text-gray-600 mb-1">Phone</label>
                     <input
                       type="text"
                       name="phone"
@@ -927,9 +833,7 @@ const Faculty = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-600 mb-1">
-                    Workload (hours/week) *
-                  </label>
+                  <label className="block text-sm font-medium text-gray-600 mb-1">Workload (hours/week) *</label>
                   <input
                     type="number"
                     name="workload"
@@ -948,14 +852,14 @@ const Faculty = () => {
             <div className="bg-gray-50 px-6 py-4 rounded-b-lg flex justify-end space-x-3">
               <button
                 onClick={closeModals}
-                className="px-4 py-2 text-gray-600 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2 text-gray-600 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 disabled:opacity-50"
                 disabled={isSubmitting}
               >
                 Cancel
               </button>
               <button
                 onClick={handleEditFaculty}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 flex items-center"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? (

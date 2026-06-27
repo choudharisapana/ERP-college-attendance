@@ -1,45 +1,67 @@
+// frontend/src/services/api.js
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "http://localhost:5000/api",
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api",
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-// Request interceptor
+// ✅ Request interceptor - FIXED
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("token");
-    if (token) {
+    const token = localStorage.getItem("auth_token");
+    
+    // ✅ Check if token is valid (not null, undefined, empty, or "null" string)
+    const isValidToken = token && 
+                         token !== "null" && 
+                         token !== "undefined" && 
+                         token.trim() !== "" && 
+                         token.length > 10;
+    
+    if (isValidToken) {
       config.headers.Authorization = `Bearer ${token}`;
+      console.log(`✅ Token added to ${config.url}`);
+    } else {
+      // ✅ Remove any invalid Authorization header
+      delete config.headers.Authorization;
+      // ✅ Clear invalid token from localStorage
+      if (token === "null" || token === "undefined") {
+        localStorage.removeItem("auth_token");
+      }
+      console.log(`⚠️ No valid token for ${config.url}`);
     }
-    console.log(`API Request: ${config.method?.toUpperCase()} ${config.url}`, config.data || {});
+    
+    console.log(`📤 ${config.method?.toUpperCase()} ${config.url}`);
     return config;
   },
   (error) => {
-    console.error("API Request Error:", error);
+    console.error("❌ Request Error:", error);
     return Promise.reject(error);
   }
 );
 
-// Response interceptor
+// ✅ Response interceptor
 api.interceptors.response.use(
   (response) => {
-    console.log(`API Response: ${response.status} ${response.config.url}`, response.data);
+    console.log(`✅ ${response.status} ${response.config.url}`);
     return response;
   },
   (error) => {
-    console.error("API Response Error:", {
+    console.error("❌ Response Error:", {
       status: error.response?.status,
       url: error.config?.url,
-      data: error.response?.data,
       message: error.message
     });
     
+    // ✅ Only redirect on 401 if we have a valid token
     if (error.response?.status === 401) {
-      localStorage.removeItem("token");
-      window.location.href = "/login";
+      const token = localStorage.getItem("auth_token");
+      if (token && token !== "null" && token !== "undefined") {
+        localStorage.removeItem("auth_token");
+        window.location.href = "/login";
+      }
     }
     
     return Promise.reject(error);
@@ -84,14 +106,12 @@ export const batchAPI = {
   delete: (id) => api.delete(`/batches/${id}`),
 };
 
-// Dashboard API Service
 export const dashboardAPI = {
   getDashboard: () => api.get("/dashboard"),
   getStats: () => api.get("/dashboard/stats"),
   refreshDashboard: () => api.post("/dashboard/refresh"),
 };
 
-// services/api.js
 export const settingsAPI = {
   getSettings: () => api.get('/settings'),
   updateSettings: (data) => api.put('/settings', data),
@@ -99,7 +119,6 @@ export const settingsAPI = {
   resetSettings: () => api.post('/settings/reset')
 };
 
-// Export all APIs as a single object
 export const apiServices = {
   auth: authAPI,
   subject: subjectAPI,

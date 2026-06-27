@@ -1,7 +1,12 @@
+// frontend/src/components/pages/Classroom.jsx
 import React, { useState, useEffect } from "react";
 import { classroomAPI } from "../../services/api";
+import { useAuth } from "../../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const Classroom = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState("All");
   const [filterBuilding, setFilterBuilding] = useState("All");
@@ -14,6 +19,9 @@ const Classroom = () => {
   const [error, setError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [apiError, setApiError] = useState(null);
+
+  const isAdmin = user?.role === "admin";
+  const isFaculty = user?.role === "faculty";
 
   const [newClassroom, setNewClassroom] = useState({
     name: "",
@@ -63,6 +71,15 @@ const Classroom = () => {
   ];
   const availabilityOptions = ["Available", "In Use", "Under Maintenance"];
 
+  useEffect(() => {
+    // ✅ Faculty can view, Admin can view
+    if (!isAdmin && !isFaculty) {
+      navigate('/dashboard');
+      return;
+    }
+    fetchClassrooms();
+  }, [isAdmin, isFaculty]);
+
   // Fetch classrooms from API
   const fetchClassrooms = async () => {
     try {
@@ -70,7 +87,6 @@ const Classroom = () => {
       setError(null);
       const response = await classroomAPI.getAll();
 
-      // Handle different response structures
       let classroomData = [];
       if (response.data) {
         if (Array.isArray(response.data.data)) {
@@ -91,10 +107,6 @@ const Classroom = () => {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    fetchClassrooms();
-  }, []);
 
   // Filter classrooms based on search, type, building and department
   const filteredClassrooms = classrooms.filter((classroom) => {
@@ -128,9 +140,13 @@ const Classroom = () => {
     setFilterDepartment("All");
   };
 
-  // Add Classroom Functionality
+  // Add Classroom Functionality - Only Admin
   const handleAddClassroom = async () => {
-    // Validate required fields
+    if (!isAdmin) {
+      alert("You don't have permission to add classrooms");
+      return;
+    }
+
     if (!newClassroom.name.trim()) {
       alert("Please enter classroom name");
       return;
@@ -156,7 +172,6 @@ const Classroom = () => {
     setApiError(null);
 
     try {
-      // Prepare data for API
       const classroomData = {
         name: newClassroom.name.trim(),
         building: newClassroom.building,
@@ -167,15 +182,9 @@ const Classroom = () => {
         availability: newClassroom.availability,
       };
 
-      console.log("Adding classroom with data:", classroomData);
-
       const response = await classroomAPI.create(classroomData);
-      console.log("Classroom added successfully:", response.data);
-
-      // Refresh the list
       await fetchClassrooms();
 
-      // Reset form
       setNewClassroom({
         name: "",
         building: "",
@@ -190,12 +199,8 @@ const Classroom = () => {
       alert("Classroom added successfully!");
     } catch (err) {
       console.error("Error adding classroom:", err);
-
-      // Extract error message
       let errorMessage = "Failed to add classroom. Please try again.";
-
       if (err.response?.data) {
-        // Handle validation errors
         if (err.response.data.errors) {
           const errors = err.response.data.errors;
           errorMessage = Object.values(errors)
@@ -207,7 +212,6 @@ const Classroom = () => {
       } else if (err.message) {
         errorMessage = err.message;
       }
-
       setApiError(errorMessage);
       alert(`Error: ${errorMessage}`);
     } finally {
@@ -215,11 +219,15 @@ const Classroom = () => {
     }
   };
 
-  // Edit Classroom Functionality
+  // Edit Classroom Functionality - Only Admin
   const handleEditClassroom = async () => {
+    if (!isAdmin) {
+      alert("You don't have permission to edit classrooms");
+      return;
+    }
+
     if (!editingClassroom) return;
 
-    // Validate required fields
     if (!newClassroom.name?.trim()) {
       alert("Please enter classroom name");
       return;
@@ -245,7 +253,6 @@ const Classroom = () => {
     setApiError(null);
 
     try {
-      // Prepare data for API
       const classroomData = {
         name: newClassroom.name.trim(),
         building: newClassroom.building,
@@ -256,15 +263,7 @@ const Classroom = () => {
         availability: newClassroom.availability,
       };
 
-      console.log("Updating classroom with data:", classroomData);
-
-      const response = await classroomAPI.update(
-        editingClassroom._id,
-        classroomData
-      );
-      console.log("Classroom updated successfully:", response.data);
-
-      // Refresh the list
+      const response = await classroomAPI.update(editingClassroom._id, classroomData);
       await fetchClassrooms();
 
       setIsEditModalOpen(false);
@@ -272,10 +271,7 @@ const Classroom = () => {
       alert("Classroom updated successfully!");
     } catch (err) {
       console.error("Error updating classroom:", err);
-
-      // Extract error message
       let errorMessage = "Failed to update classroom. Please try again.";
-
       if (err.response?.data) {
         if (err.response.data.errors) {
           const errors = err.response.data.errors;
@@ -288,7 +284,6 @@ const Classroom = () => {
       } else if (err.message) {
         errorMessage = err.message;
       }
-
       setApiError(errorMessage);
       alert(`Error: ${errorMessage}`);
     } finally {
@@ -296,8 +291,13 @@ const Classroom = () => {
     }
   };
 
-  // Delete Classroom Functionality
+  // Delete Classroom Functionality - Only Admin
   const handleDeleteClassroom = async (id) => {
+    if (!isAdmin) {
+      alert("You don't have permission to delete classrooms");
+      return;
+    }
+
     if (!id) {
       alert("Invalid classroom ID");
       return;
@@ -308,27 +308,26 @@ const Classroom = () => {
     }
 
     try {
-      console.log("Deleting classroom with ID:", id);
-      const response = await classroomAPI.delete(id);
-      console.log("Classroom deleted successfully:", response.data);
-
-      // Refresh the list
+      await classroomAPI.delete(id);
       await fetchClassrooms();
       alert("Classroom deleted successfully!");
     } catch (err) {
       console.error("Error deleting classroom:", err);
-
       let errorMessage = "Failed to delete classroom. Please try again.";
       if (err.response?.data?.message) {
         errorMessage = err.response.data.message;
       }
-
       alert(`Error: ${errorMessage}`);
     }
   };
 
-  // Open Edit Modal
+  // Open Edit Modal - Only Admin
   const openEditModal = (classroom) => {
+    if (!isAdmin) {
+      alert("You don't have permission to edit classrooms");
+      return;
+    }
+
     if (!classroom || !classroom._id) {
       alert("Invalid classroom data");
       return;
@@ -395,7 +394,6 @@ const Classroom = () => {
     }
   };
 
-  // Loading state
   if (loading && classrooms.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50 pt-24 flex items-center justify-center">
@@ -409,19 +407,16 @@ const Classroom = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Main Content with extra top padding to avoid navbar overlap */}
       <div className="max-w-7xl mx-auto">
-        {/* Header Section */}
         <div className="pt-24 text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-600 mb-2">
             Classroom Management
           </h1>
           <p className="text-lg text-gray-600">
-            Manage classrooms, labs, and facilities
+            {isAdmin ? "Manage classrooms, labs, and facilities" : "View classrooms"}
           </p>
         </div>
 
-        {/* Error Display */}
         {apiError && (
           <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-md">
             <div className="flex justify-between items-center">
@@ -436,14 +431,10 @@ const Classroom = () => {
           </div>
         )}
 
-        {/* Search and Filters Section */}
         <div className="bg-white rounded-lg shadow-md p-4 md:p-6 mb-6">
           <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
             <div className="md:col-span-2">
-              <label
-                htmlFor="search"
-                className="block text-sm font-medium text-gray-600 mb-1"
-              >
+              <label className="block text-sm font-medium text-gray-600 mb-1">
                 Search classrooms...
               </label>
               <div className="relative">
@@ -452,7 +443,6 @@ const Classroom = () => {
                 </div>
                 <input
                   type="text"
-                  id="search"
                   placeholder="Search by name, building or department..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
@@ -462,14 +452,10 @@ const Classroom = () => {
             </div>
 
             <div>
-              <label
-                htmlFor="type"
-                className="block text-sm font-medium text-gray-600 mb-1"
-              >
+              <label className="block text-sm font-medium text-gray-600 mb-1">
                 Classroom Type
               </label>
               <select
-                id="type"
                 value={filterType}
                 onChange={(e) => setFilterType(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -484,14 +470,10 @@ const Classroom = () => {
             </div>
 
             <div>
-              <label
-                htmlFor="building"
-                className="block text-sm font-medium text-gray-600 mb-1"
-              >
+              <label className="block text-sm font-medium text-gray-600 mb-1">
                 Building
               </label>
               <select
-                id="building"
                 value={filterBuilding}
                 onChange={(e) => setFilterBuilding(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -506,14 +488,10 @@ const Classroom = () => {
             </div>
 
             <div>
-              <label
-                htmlFor="department"
-                className="block text-sm font-medium text-gray-600 mb-1"
-              >
+              <label className="block text-sm font-medium text-gray-600 mb-1">
                 Department
               </label>
               <select
-                id="department"
                 value={filterDepartment}
                 onChange={(e) => setFilterDepartment(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -531,22 +509,24 @@ const Classroom = () => {
           <div className="mt-4 flex justify-between items-center">
             <button
               onClick={clearFilters}
-              className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200"
             >
               Clear Filters
             </button>
-            <button
-              onClick={() => setIsAddModalOpen(true)}
-              disabled={isSubmitting}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center"
-            >
-              <i className="fas fa-plus mr-2"></i>
-              Add Classroom
-            </button>
+            {/* ✅ Add Button - Only Admin */}
+            {isAdmin && (
+              <button
+                onClick={() => setIsAddModalOpen(true)}
+                disabled={isSubmitting}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center"
+              >
+                <i className="fas fa-plus mr-2"></i>
+                Add Classroom
+              </button>
+            )}
           </div>
         </div>
 
-        {/* Error State */}
         {error && classrooms.length === 0 && (
           <div className="text-center py-12">
             <i className="fas fa-exclamation-triangle text-6xl text-red-500 mb-4"></i>
@@ -562,7 +542,6 @@ const Classroom = () => {
           </div>
         )}
 
-        {/* Classrooms Grid */}
         {!error && (
           <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
             {filteredClassrooms.map((classroom) => (
@@ -641,22 +620,32 @@ const Classroom = () => {
                   </div>
 
                   <div className="flex justify-between items-center mt-6 pt-4 border-t border-gray-200">
-                    <button
-                      onClick={() => openEditModal(classroom)}
-                      className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                      disabled={isSubmitting}
-                    >
-                      <i className="fas fa-edit mr-2"></i>
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDeleteClassroom(classroom._id)}
-                      className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                      disabled={isSubmitting}
-                    >
-                      <i className="fas fa-trash mr-2"></i>
-                      Delete
-                    </button>
+                    {/* ✅ Edit/Delete - Only Admin */}
+                    {isAdmin && (
+                      <>
+                        <button
+                          onClick={() => openEditModal(classroom)}
+                          className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50"
+                          disabled={isSubmitting}
+                        >
+                          <i className="fas fa-edit mr-2"></i>
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDeleteClassroom(classroom._id)}
+                          className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 disabled:opacity-50"
+                          disabled={isSubmitting}
+                        >
+                          <i className="fas fa-trash mr-2"></i>
+                          Delete
+                        </button>
+                      </>
+                    )}
+                    {/* ✅ Faculty - View Only */}
+                    {isFaculty && (
+                      <div className="w-full text-center text-sm text-gray-500">
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -664,7 +653,6 @@ const Classroom = () => {
           </div>
         )}
 
-        {/* Empty State */}
         {!error && filteredClassrooms.length === 0 && classrooms.length > 0 && (
           <div className="text-center py-12">
             <i className="fas fa-chalkboard-teacher text-6xl text-gray-300 mb-4"></i>
@@ -677,7 +665,6 @@ const Classroom = () => {
           </div>
         )}
 
-        {/* No Classrooms State */}
         {!error && classrooms.length === 0 && (
           <div className="text-center py-12">
             <i className="fas fa-chalkboard-teacher text-6xl text-gray-300 mb-4"></i>
@@ -685,20 +672,18 @@ const Classroom = () => {
               No classrooms yet
             </h3>
             <p className="text-gray-500">
-              Add your first subject using the blue button
+              {isAdmin ? "Add your first classroom using the blue button" : "No classrooms available"}
             </p>
           </div>
         )}
       </div>
 
-      {/* Add New Classroom Modal */}
-      {isAddModalOpen && (
+      {/* ✅ Add Classroom Modal - Only Admin */}
+      {isAddModalOpen && isAdmin && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
             <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-6 rounded-t-lg">
-              <h2 className="text-2xl font-bold text-white">
-                Add New Classroom
-              </h2>
+              <h2 className="text-2xl font-bold text-white">Add New Classroom</h2>
               <p className="text-blue-100 mt-1">Enter classroom details</p>
             </div>
 
@@ -846,14 +831,14 @@ const Classroom = () => {
             <div className="bg-gray-50 px-6 py-4 rounded-b-lg flex justify-end space-x-3">
               <button
                 onClick={closeModals}
-                className="px-4 py-2 text-gray-600 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2 text-gray-600 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 disabled:opacity-50"
                 disabled={isSubmitting}
               >
                 Cancel
               </button>
               <button
                 onClick={handleAddClassroom}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 flex items-center"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? (
@@ -870,8 +855,8 @@ const Classroom = () => {
         </div>
       )}
 
-      {/* Edit Classroom Modal */}
-      {isEditModalOpen && editingClassroom && (
+      {/* ✅ Edit Classroom Modal - Only Admin */}
+      {isEditModalOpen && editingClassroom && isAdmin && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
             <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-6 rounded-t-lg">
@@ -1018,14 +1003,14 @@ const Classroom = () => {
             <div className="bg-gray-50 px-6 py-4 rounded-b-lg flex justify-end space-x-3">
               <button
                 onClick={closeModals}
-                className="px-4 py-2 text-gray-600 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2 text-gray-600 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 disabled:opacity-50"
                 disabled={isSubmitting}
               >
                 Cancel
               </button>
               <button
                 onClick={handleEditClassroom}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 flex items-center"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? (

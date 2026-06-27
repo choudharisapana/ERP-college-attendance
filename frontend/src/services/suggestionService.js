@@ -5,7 +5,7 @@ const API_URL = "http://localhost:5000/api/suggestions";
 // Submit a new suggestion
 const submitSuggestion = async (suggestionData) => {
   try {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("auth_token");
     const config = token
       ? { headers: { Authorization: `Bearer ${token}` } }
       : {};
@@ -41,7 +41,7 @@ const getSuggestion = async (id) => {
 // Upvote a suggestion
 const upvoteSuggestion = async (id) => {
   try {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("auth_token");
     const response = await axios.post(
       `${API_URL}/${id}/upvote`,
       {},

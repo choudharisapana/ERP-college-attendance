@@ -1,3 +1,4 @@
+// frontend/src/components/common/Navbar.jsx
 import React, { useState, useEffect, useRef } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
@@ -14,25 +15,15 @@ const Navbar = () => {
     (n) => n.type === "Schedule Change",
   );
 
+  // ✅ UPDATED: Only required links
   const centerLinks = [
-    { name: "Dashboard", path: "/dashboard", icon: "fa-chart-line" },
-    {
-      name: "Create-Timetable",
-      path: "/create-timetable",
-      icon: "fa-calendar-plus",
-    },
-    { name: "Subject", path: "/subject", icon: "fa-solid fa-book-open-reader" },
-    {
-      name: "Classrooms",
-      path: "/classrooms",
-      icon: "fa-solid fa-chalkboard-user",
-    },
-    { name: "Faculty", path: "/faculty", icon: "fa-solid fa-users" },
-    {
-      name: "StudentBatches",
-      path: "/studentBatches",
-      icon: "fa-solid fa-clipboard-list",
-    },
+    { name: "Dashboard", path: "/dashboard", icon: "fa-chart-line", roles: ["admin", "user", "faculty"] },
+    { name: "Timetable", path: "/create-timetable", icon: "fa-calendar-alt", roles: ["admin", "faculty"] },
+    { name: "Subject", path: "/subject", icon: "fa-solid fa-book-open-reader", roles: ["admin", "faculty"] },
+    { name: "Classrooms", path: "/classrooms", icon: "fa-solid fa-chalkboard-user", roles: ["admin", "faculty"] },
+    { name: "Faculty", path: "/faculty", icon: "fa-solid fa-users", roles: ["admin", "faculty"] },
+    { name: "StudentBatches", path: "/studentBatches", icon: "fa-solid fa-clipboard-list", roles: ["admin", "user", "faculty"] },
+   
   ];
 
   const toggleMenu = () => {
@@ -75,7 +66,7 @@ const Navbar = () => {
     if (!user) return;
 
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("auth_token");
       const response = await fetch("http://localhost:5000/api/notifications", {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -87,7 +78,6 @@ const Navbar = () => {
         const data = await response.json();
         setNotifications(data.notifications || []);
 
-        // Calculate unread count using the helper function
         const unreadNotifications = (data.notifications || []).filter(
           (n) => n.type === "Schedule Change" && isNotificationUnread(n)
         );
@@ -101,7 +91,7 @@ const Navbar = () => {
   // Mark a single notification as read
   const markAsRead = async (notificationId) => {
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("auth_token");
       const response = await fetch(
         `http://localhost:5000/api/notifications/${notificationId}/read`,
         {
@@ -133,10 +123,10 @@ const Navbar = () => {
     }
   };
 
-  // Mark all notifications as read - FIXED ✅
+  // Mark all notifications as read
   const markAllAsRead = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("auth_token");
       const response = await fetch(
         "http://localhost:5000/api/notifications/mark-all-read",
         {
@@ -239,14 +229,13 @@ const Navbar = () => {
             <div className="flex items-baseline space-x-2">
               {centerLinks
                 .filter((link) => {
+                  if (link.roles) {
+                    return link.roles.includes(user.role);
+                  }
                   if (user.role === "admin") return true;
-
                   return [
                     "/dashboard",
                     "/studentBatches",
-                    "/settings",
-                    "/suggestions",
-                    "/contact",
                   ].includes(link.path);
                 })
                 .map((link) => (
@@ -297,7 +286,7 @@ const Navbar = () => {
                       {unreadCount > 0 && (
                         <button
                           onClick={markAllAsRead}
-                          className="text-xs text-blue-100 hover:text-blue-600"
+                          className="text-xs text-blue-600 hover:text-blue-700"
                         >
                           Mark all read
                         </button>
@@ -311,7 +300,7 @@ const Navbar = () => {
                             onClick={() =>
                               handleNotificationClick(notification)
                             }
-                            className={`p-3 border-b border-gray-600 hover:bg-gray-50 cursor-pointer transition-colors ${
+                            className={`p-3 border-b border-gray-200 hover:bg-gray-50 cursor-pointer transition-colors ${
                               isNotificationUnread(notification)
                                 ? "bg-blue-50"
                                 : ""
@@ -331,7 +320,7 @@ const Navbar = () => {
                                 <p className="text-sm text-gray-600">
                                   {notification.message}
                                 </p>
-                                <p className="text-xs text-gray-600 mt-1">
+                                <p className="text-xs text-gray-500 mt-1">
                                   {formatTime(notification.createdAt)}
                                 </p>
                               </div>
@@ -339,7 +328,7 @@ const Navbar = () => {
                           </div>
                         ))
                       ) : (
-                        <div className="p-4 text-center text-gray-600">
+                        <div className="p-4 text-center text-gray-500">
                           <i className="fas fa-bell-slash text-2xl mb-2"></i>
                           <p>No notifications</p>
                         </div>
@@ -349,7 +338,7 @@ const Navbar = () => {
                       <div className="p-3 border-t border-gray-200">
                         <button
                           onClick={handleViewAll}
-                          className="text-sm text-blue-600 hover:text-blue-600 w-full text-center"
+                          className="text-sm text-blue-600 hover:text-blue-700 w-full text-center"
                         >
                           View All Notifications
                         </button>
@@ -359,7 +348,7 @@ const Navbar = () => {
                 )}
               </div>
 
-              {/* User profile button - clickable to navigate to profile */}
+              {/* ✅ User profile button - clickable to navigate to profile */}
               <button
                 onClick={handleProfileClick}
                 className="flex items-center space-x-3 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 hover:bg-blue-500 hover:text-white text-blue-100"
@@ -438,10 +427,9 @@ const Navbar = () => {
         }`}
       >
         <div className="px-2 pt-2 pb-4 space-y-1 bg-blue-600 shadow-inner">
-          {/* Show navigation links only when user is logged in */}
           {user && (
             <>
-              {/* User info in mobile menu with notification */}
+              {/* User info in mobile menu */}
               <div className="flex items-center justify-between px-4 py-3 border-b border-blue-500 mb-2">
                 <button
                   onClick={() => {
@@ -536,16 +524,16 @@ const Navbar = () => {
                 </div>
               )}
 
+              {/* Mobile menu links */}
               {centerLinks
                 .filter((link) => {
+                  if (link.roles) {
+                    return link.roles.includes(user.role);
+                  }
                   if (user.role === "admin") return true;
-
                   return [
                     "/dashboard",
                     "/studentBatches",
-                    "/settings",
-                    "/suggestions",
-                    "/contact",
                   ].includes(link.path);
                 })
                 .map((link) => (
