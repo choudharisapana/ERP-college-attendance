@@ -1,175 +1,107 @@
-// // // import jwt from "jsonwebtoken";
-// // // import User from "../models/User.js";
-
-// // // export const protect = async (req, res, next) => {
-// // //   let token;
-
-// // //   if (
-// // //     req.headers.authorization &&
-// // //     req.headers.authorization.startsWith("Bearer")
-// // //   ) {
-// // //     token = req.headers.authorization.split(" ")[1];
-// // //   }
-
-// // //   if (!token) {
-// // //     return res.status(401).json({
-// // //       success: false,
-// // //       message: "Not authorized, no token",
-// // //     });
-// // //   }
-
-// // //   try {
-// // //     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-// // //     req.user = await User.findById(decoded.id).select("-password");
-
-// // //     if (!req.user) {
-// // //       return res.status(401).json({
-// // //         success: false,
-// // //         message: "User not found",
-// // //       });
-// // //     }
-
-// // //     next();
-// // //   } catch (error) {
-// // //     return res.status(401).json({
-// // //       success: false,
-// // //       message: "Not authorized, token failed",
-// // //     });
-// // //   }
-// // // };
-
-// // import jwt from "jsonwebtoken";
-// // import User from "../models/User.js";
-
-// // export const protect = async (req, res, next) => {
-// //   let token;
-
-// //   if (
-// //     req.headers.authorization &&
-// //     req.headers.authorization.startsWith("Bearer")
-// //   ) {
-// //     token = req.headers.authorization.split(" ")[1];
-// //   }
-
-// //   if (!token) {
-// //     return res.status(401).json({
-// //       success: false,
-// //       message: "Not authorized, no token",
-// //     });
-// //   }
-
-// //   try {
-// //     const decoded = jwt.verify(
-// //       token,
-// //       process.env.JWT_SECRET || "eduscheduler-secret-key"
-// //     );
-
-// //     req.user = await User.findById(decoded.id).select("-password");
-
-// //     if (!req.user) {
-// //       return res.status(401).json({
-// //         success: false,
-// //         message: "User not found",
-// //       });
-// //     }
-
-// //     next();
-// //   } catch (error) {
-// //     return res.status(401).json({
-// //       success: false,
-// //       message: "Not authorized, token failed",
-// //     });
-// //   }
-// // };
-
-// import jwt from "jsonwebtoken";
-// import User from "../models/User.js";
-
-// export const protect = async (req, res, next) => {
-//   let token;
-
-//   if (
-//     req.headers.authorization &&
-//     req.headers.authorization.startsWith("Bearer")
-//   ) {
-//     token = req.headers.authorization.split(" ")[1];
-//   }
-
-//   if (!token) {
-//     return res.status(401).json({
-//       success: false,
-//       message: "Not authorized, no token",
-//     });
-//   }
-
-//   try {
-//     const decoded = jwt.verify(
-//       token,
-//       process.env.JWT_SECRET || "eduscheduler-secret-key"
-//     );
-
-//     req.user = await User.findById(decoded.id).select("-password");
-
-//     if (!req.user) {
-//       return res.status(401).json({
-//         success: false,
-//         message: "User not found",
-//       });
-//     }
-
-//     next();
-//   } catch (error) {
-//     console.error("Auth error:", error.message);
-//     return res.status(401).json({
-//       success: false,
-//       message: "Not authorized, token failed",
-//     });
-//   }
-// };
-
-// export default protect;
-
-import jwt from "jsonwebtoken";
-import User from "../models/User.js";
+// backend/middleware/auth.js
+import jwt from 'jsonwebtoken';
+import User from '../models/User.js';
 
 export const protect = async (req, res, next) => {
   let token;
 
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith("Bearer")
-  ) {
-    token = req.headers.authorization.split(" ")[1];
-  }
+  console.log("🔍 AUTH HEADER RECEIVED:", req.headers.authorization);
 
-  if (!token) {
+  if (!req.headers.authorization) {
+    console.log("❌ No authorization header");
     return res.status(401).json({
       success: false,
-      message: "Not authorized, no token",
+      message: 'Not authorized, no token'
     });
   }
 
-  try {
-    const decoded = jwt.verify(
-      token,
-      process.env.JWT_SECRET || "eduscheduler-secret-key"
-    );
+  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+    try {
+      token = req.headers.authorization.split(' ')[1];
 
-    req.user = await User.findById(decoded.id).select("-password");
+      console.log("🔑 TOKEN AFTER SPLIT:", token ? `${token.substring(0, 20)}...` : 'null');
 
-    if (!req.user) {
+      // ✅ Validate token format
+      if (!token || token === 'null' || token === 'undefined' || token.trim() === '' || token.length < 10) {
+        console.log("❌ Invalid token format");
+        return res.status(401).json({
+          success: false,
+          message: 'Not authorized, invalid token format'
+        });
+      }
+
+      // ✅ Verify JWT
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      console.log("✅ DECODED TOKEN:", decoded);
+
+      // ✅ Get user from database
+      req.user = await User.findById(decoded.id).select('-password');
+
+      console.log("👤 USER FOUND:", req.user?.email);
+
+      if (!req.user) {
+        console.log("❌ User not found in database");
+        return res.status(401).json({
+          success: false,
+          message: 'User not found'
+        });
+      }
+
+      console.log("✅ AUTH SUCCESS");
+      next();
+    } catch (error) {
+      console.error("❌ JWT ERROR:", error.message);
+      
+      // ✅ Better error messages
+      if (error.name === 'JsonWebTokenError') {
+        return res.status(401).json({
+          success: false,
+          message: 'Invalid token. Please login again.'
+        });
+      }
+      if (error.name === 'TokenExpiredError') {
+        return res.status(401).json({
+          success: false,
+          message: 'Token expired. Please login again.'
+        });
+      }
+      
       return res.status(401).json({
         success: false,
-        message: "User not found",
+        message: 'Not authorized, token failed'
       });
     }
+  }
 
-    next();
-  } catch (error) {
+  if (!token) {
+    console.log("❌ No token provided");
     return res.status(401).json({
       success: false,
-      message: "Not authorized, token failed",
+      message: 'Not authorized, no token'
+    });
+  }
+};
+
+// ✅ ADD THIS - Admin middleware
+export const admin = (req, res, next) => {
+  if (req.user && req.user.role === 'admin') {
+    next();
+  } else {
+    return res.status(403).json({
+      success: false,
+      message: 'Not authorized as admin. Admin access required.'
+    });
+  }
+};
+
+// ✅ ADD THIS - Faculty middleware
+export const faculty = (req, res, next) => {
+  if (req.user && (req.user.role === 'faculty' || req.user.role === 'admin')) {
+    next();
+  } else {
+    return res.status(403).json({
+      success: false,
+      message: 'Not authorized as faculty. Faculty access required.'
     });
   }
 };

@@ -1,15 +1,27 @@
+// backend/config/emailConfig.js
 import dotenv from "dotenv";
-dotenv.config();   
 import nodemailer from 'nodemailer';
 
-// console.log("EMAIL_USER in config:", process.env.EMAIL_USER);
-// console.log("EMAIL_PASSWORD in config:", process.env.EMAIL_PASSWORD);
+dotenv.config();
+
+console.log("📧 EMAIL_USER:", process.env.EMAIL_USER || "❌ Missing");
+console.log("📧 EMAIL_PASS:", process.env.EMAIL_PASSWORD ? "✅ Set" : "❌ Missing");
+
+const emailPass = process.env.EMAIL_PASSWORD ? process.env.EMAIL_PASSWORD.replace(/\s/g, '') : '';
 
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
         user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASSWORD
+        pass: emailPass, 
+    }
+});
+
+transporter.verify((error, success) => {
+    if (error) {
+        console.error("❌ Email transporter error:", error.message);
+    } else {
+        console.log("✅ Email transporter ready");
     }
 });
 

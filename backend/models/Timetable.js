@@ -56,7 +56,7 @@ const scheduleEntrySchema = new mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ['Core', 'Elective', 'Lab', 'Project', 'Workshop', 'Seminar'],
+    enum: ['Core', 'Elective', 'Lab', 'Project', 'Workshop', 'Seminar', 'PEC'],
     default: 'Theory'
   },
   batchDivision: {

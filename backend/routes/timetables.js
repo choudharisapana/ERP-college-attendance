@@ -1,5 +1,6 @@
+// backend/routes/timetables.js
 import express from 'express';
-const router = express.Router();
+import { protect, admin } from '../middleware/auth.js';
 import {
   generateTimetable,
   createTimetable,
@@ -13,18 +14,24 @@ import {
   removeBreak
 } from '../controllers/timetableController.js';
 
-// All timetables routes
-router.get('/', getAllTimetables);
-router.get('/:id', getTimetableById);
-router.post('/check-conflicts', checkConflicts);
-router.post('/generate', generateTimetable);
-router.post('/', createTimetable);
-router.put('/:id', updateTimetable);
-router.delete('/:id', deleteTimetable);
-router.put('/:id/publish', publishTimetable);
+const router = express.Router();
 
-// Break management routes
-router.post('/:id/breaks', addBreak);
-router.delete('/:id/breaks/:breakId', removeBreak);
+// ✅ Faculty & Admin - View Only
+router.get('/', protect, getAllTimetables);
+router.get('/:id', protect, getTimetableById);
+
+// ✅ All authenticated users - Check conflicts (for viewing)
+router.post('/check-conflicts', protect, checkConflicts);
+
+// ✅ Admin Only - Create/Update/Delete
+router.post('/generate', protect, admin, generateTimetable);
+router.post('/', protect, admin, createTimetable);
+router.put('/:id', protect, admin, updateTimetable);
+router.delete('/:id', protect, admin, deleteTimetable);
+router.put('/:id/publish', protect, admin, publishTimetable);
+
+// ✅ Admin Only - Break management
+router.post('/:id/breaks', protect, admin, addBreak);
+router.delete('/:id/breaks/:breakId', protect, admin, removeBreak);
 
 export default router;

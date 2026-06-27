@@ -1,6 +1,4 @@
-dotenv.config({
-  path: path.join(process.cwd(), ".env"),
-});
+
 import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
@@ -19,16 +17,28 @@ import dashboardRoutes from "./routes/dashboard.js";
 import settingsRoutes from "./routes/settings.js";
 import supportRoutes from "./routes/supportRoutes.js";
 
-
+dotenv.config({
+  path: path.join(process.cwd(), ".env"),
+});
 const app = express();
+
+const allowedOrigins = [
+  "http://localhost:5173",
+  process.env.FRONTEND_URL,
+];
 
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
   })
 );
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -52,7 +62,6 @@ app.use('/api/notifications', notificationRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/settings", settingsRoutes);
 app.use("/api/support", supportRoutes);
-
 
 app.get("/api/test", (req, res) => {
   res.json({ success: true });

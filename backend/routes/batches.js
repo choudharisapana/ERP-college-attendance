@@ -1,4 +1,5 @@
 import express from 'express';
+import { protect } from "../middleware/auth.js";
 import {
   getAllBatches,
   getBatchById,
@@ -13,14 +14,40 @@ import {
 
 const router = express.Router();
 
-router.get('/', getAllBatches);
-router.get('/stats', getBatchStats);
-router.get('/:id', getBatchById);
-router.post('/', createBatch);
-router.put('/:id', updateBatch);
-router.delete('/:id', deleteBatch);
-router.post('/:id/semesters/:semesterNumber/subjects', addSubjectsToSemester);
-router.delete('/:id/semesters/:semesterNumber/subjects/:subjectId', removeSubjectFromSemester);
-router.get('/:id/semesters/:semesterNumber/subjects', getSemesterSubjects);
+router.get('/', protect, getAllBatches);
+router.get('/stats', protect, getBatchStats);
+router.get('/:id', protect, getBatchById);
+
+router.post('/', protect, createBatch);
+router.put('/:id', protect, updateBatch);
+router.delete('/:id', protect, deleteBatch);
+
+router.post(
+  '/:id/semesters/:semesterNumber/subjects',
+  protect,
+  addSubjectsToSemester
+);
+
+router.delete(
+  '/:id/semesters/:semesterNumber/subjects/:subjectId',
+  protect,
+  removeSubjectFromSemester
+);
+
+router.get(
+  '/:id/semesters/:semesterNumber/subjects',
+  protect,
+  getSemesterSubjects
+);
+
+// router.get('/', getAllBatches);
+// router.get('/stats', getBatchStats);
+// router.get('/:id', getBatchById);
+// router.post('/', createBatch);
+// router.put('/:id', updateBatch);
+// router.delete('/:id', deleteBatch);
+// router.post('/:id/semesters/:semesterNumber/subjects', addSubjectsToSemester);
+// router.delete('/:id/semesters/:semesterNumber/subjects/:subjectId', removeSubjectFromSemester);
+// router.get('/:id/semesters/:semesterNumber/subjects', getSemesterSubjects);
 
 export default router;

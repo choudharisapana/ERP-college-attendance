@@ -1,10 +1,10 @@
+// backend/controllers/facultyController.js
 import Faculty from "../models/Faculty.js";
 
-// GET all faculty
+// ✅ Get all faculty
 export const getAllFaculty = async (req, res) => {
   try {
     const faculty = await Faculty.find();
-
     res.status(200).json({
       success: true,
       data: faculty,
@@ -17,10 +17,37 @@ export const getAllFaculty = async (req, res) => {
   }
 };
 
-// CREATE faculty
+// ✅ Get faculty by ID
+export const getFacultyById = async (req, res) => {
+  try {
+    const faculty = await Faculty.findById(req.params.id);
+    if (!faculty) {
+      return res.status(404).json({
+        success: false,
+        message: "Faculty not found",
+      });
+    }
+    res.status(200).json({
+      success: true,
+      data: faculty,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+// ✅ Create faculty
 export const createFaculty = async (req, res) => {
- try {
-    const faculty = await Faculty.create(req.body);
+  try {
+    const facultyData = {
+      ...req.body,
+      status: true,
+    };
+
+    const faculty = await Faculty.create(facultyData);
     res.status(201).json({
       success: true,
       data: faculty,
@@ -33,7 +60,7 @@ export const createFaculty = async (req, res) => {
   }
 };
 
-// UPDATE faculty
+// ✅ Update faculty
 export const updateFaculty = async (req, res) => {
   try {
     const faculty = await Faculty.findByIdAndUpdate(
@@ -41,6 +68,13 @@ export const updateFaculty = async (req, res) => {
       req.body,
       { new: true, runValidators: true }
     );
+
+    if (!faculty) {
+      return res.status(404).json({
+        success: false,
+        message: "Faculty not found",
+      });
+    }
 
     res.status(200).json({
       success: true,
@@ -54,13 +88,19 @@ export const updateFaculty = async (req, res) => {
   }
 };
 
-// DELETE faculty (soft delete)
+// ✅ Delete faculty
 export const deleteFaculty = async (req, res) => {
   try {
-   await Faculty.findByIdAndDelete(req.params.id);
+    const faculty = await Faculty.findByIdAndDelete(req.params.id);
+    if (!faculty) {
+      return res.status(404).json({
+        success: false,
+        message: "Faculty not found",
+      });
+    }
     res.status(200).json({
       success: true,
-      message: "Faculty deleted",
+      message: "Faculty deleted successfully",
     });
   } catch (error) {
     res.status(400).json({

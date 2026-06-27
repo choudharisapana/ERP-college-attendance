@@ -1,17 +1,80 @@
+// backend/controllers/batchController.js
 import StudentBatch from "../models/StudentBatch.js";
 
 export const getAllBatches = async (req, res) => {
   try {
-    const batches = await StudentBatch.find().populate({
+    let filter = {};
+
+    // ✅ STUDENT FILTER - Safe parsing
+    if (req.user?.role === "user") {
+
+      let semesterNumber = null;
+
+      if (req.user.semester !== undefined && req.user.semester !== null && req.user.semester !== "") {
+        // Case 1: Already a number
+        if (typeof req.user.semester === "number") {
+          semesterNumber = req.user.semester;
+        }
+        // Case 2: String with "Semester 1" format
+        else if (typeof req.user.semester === "string") {
+          // "Semester 1" se number nikalna
+          const match = req.user.semester.match(/\d+/);
+          if (match) {
+            semesterNumber = parseInt(match[0]);
+          } else if (!isNaN(parseInt(req.user.semester))) {
+            // Direct number string "3"
+            semesterNumber = parseInt(req.user.semester);
+          }
+        }
+      }
+
+      console.log("🔢 Parsed Semester:", semesterNumber);
+
+      // ✅ Agar semester number valid hai toh filter lagao
+      if (semesterNumber && !isNaN(semesterNumber) && semesterNumber > 0 && semesterNumber <= 8) {
+        filter = {
+          department: req.user.department,
+          currentSemester: semesterNumber,
+        };
+        console.log("✅ Filter applied:", filter);
+      } else {
+        console.log("⚠️ Invalid semester, returning empty");
+        return res.status(200).json({
+          success: true,
+          data: [],
+          message: "Please update your semester in profile"
+        });
+      }
+    }
+
+    // ✅ FACULTY FILTER
+  
+else if (req.user?.role === "faculty") {
+  // temporary fix
+  filter = {};
+}
+
+
+    // ✅ ADMIN - No filter
+    else if (req.user?.role === "admin") {
+      filter = {};
+    }
+
+    console.log("🔍 Final Filter:", filter);
+
+    const batches = await StudentBatch.find(filter).populate({
       path: "semesters.subjects.subject",
       model: "Subject",
     });
+
+    console.log("📦 Found Batches:", batches.length);
 
     res.status(200).json({
       success: true,
       data: batches,
     });
   } catch (error) {
+    console.error("❌ Error:", error);
     res.status(500).json({
       success: false,
       message: error.message,
@@ -51,7 +114,7 @@ export const createBatch = async (req, res) => {
     const semesters = Array.from({ length: 8 }, (_, i) => ({
       semesterNumber: i + 1,
       subjects: [],
-      isActive: i === 0, // Only first semester active by default
+      isActive: i === 0,
     }));
 
     const newBatchData = {
@@ -250,7 +313,6 @@ export const getSemesterSubjects = async (req, res) => {
       });
     }
 
-    // Populate subject details
     const populatedSemester = await StudentBatch.populate(semester, {
       path: "subjects.subject",
       model: "Subject",
@@ -267,3 +329,5 @@ export const getSemesterSubjects = async (req, res) => {
     });
   }
 };
+
+
