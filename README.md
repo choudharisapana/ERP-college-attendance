@@ -32,7 +32,7 @@ EduSchedular/
 
 ## Installation & Setup
 1. Clone the repository
-git clone https://github.com/Swejaltembhare/EduSchedular.git
+git clone https://github.com/choudharisapana/ERP-college-attendance.git
 cd EduSchedular
 2. Install dependencies
 Backend
@@ -66,14 +66,13 @@ JWT_SECRET=your_secret_key
 
 
 ## Future Improvements
-Mobile responsiveness
 Advanced analytics
 
 ## Author
 
-Swejal Tembhare, Arti Thakur, Sapna Choudhari
+ Sapana Choudhari, Swejal Tembhare, Arti Thakur
 
-GitHub: https://github.com/Swejaltembhare
+GitHub: https://github.com/choudharisapana
 
 ## Support
 
