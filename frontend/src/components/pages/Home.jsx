@@ -6,7 +6,7 @@ const Home = () => {
     {
       icon: "fa-calendar-plus",
       title: "Create Timetable",
-      description: "Generate optimized timetables automatically",
+      description: "Build and manage academic timetables efficiently",
       path: "/create-Timetable",
     },
     {
@@ -43,13 +43,12 @@ const Home = () => {
 
   return (
     <div className="home-page min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 pt-16">
-      {/* Hero Section */}
       <div className="text-center py-20 px-4">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-5xl font-bold text-gray-900 dark:text-white mb-6">
             Welcome to{" "}
             <span className="text-blue-600 dark:text-blue-400">
-              EduScheduler
+              EduSchedular
             </span>
           </h1>
           <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
@@ -65,8 +64,6 @@ const Home = () => {
           </Link>
         </div>
       </div>
-
-      {/* Features Grid */}
       <div className="py-5 px-1">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-12">

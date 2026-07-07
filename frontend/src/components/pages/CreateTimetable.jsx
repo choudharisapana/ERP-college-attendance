@@ -1,5 +1,3 @@
-
-// frontend/src/components/pages/Timetable.jsx
 import React, { useState, useEffect } from "react";
 import api from "../../services/api";
 import { facultyAPI } from "../../services/api";
@@ -87,7 +85,8 @@ const Timetable = () => {
   const [showParallelForm, setShowParallelForm] = useState(false);
   const [parallelClasses, setParallelClasses] = useState([]);
   const [showTimeSlotDropdown, setShowTimeSlotDropdown] = useState(false);
-  const [showBreakTimeSlotDropdown, setShowBreakTimeSlotDropdown] = useState(false);
+  const [showBreakTimeSlotDropdown, setShowBreakTimeSlotDropdown] =
+    useState(false);
 
   // Filtered data
   const [batchSubjects, setBatchSubjects] = useState([]);
@@ -97,15 +96,60 @@ const Timetable = () => {
 
   // Break suggestions with icons
   const breakSuggestions = [
-    { name: "Lunch Break", icon: Icons.FaUtensils, color: "text-orange-600", bg: "bg-orange-100" },
-    { name: "Tea Break", icon: Icons.FaMugHot, color: "text-amber-600", bg: "bg-amber-100" },
-    { name: "Sports", icon: Icons.FaFutbol, color: "text-green-600", bg: "bg-green-100" },
-    { name: "Library", icon: Icons.FaBookReader, color: "text-purple-600", bg: "bg-purple-100" },
-    { name: "Gym", icon: Icons.FaDumbbell, color: "text-gray-600", bg: "bg-gray-100" },
-    { name: "Music", icon: Icons.FaMusic, color: "text-indigo-600", bg: "bg-indigo-100" },
-    { name: "Yoga", icon: Icons.FaYinYang, color: "text-teal-600", bg: "bg-teal-100" },
-    { name: "Games", icon: Icons.FaGamepad, color: "text-violet-600", bg: "bg-violet-100" },
-    { name: "Snacks", icon: Icons.FaApple, color: "text-red-600", bg: "bg-red-100" },
+    {
+      name: "Lunch Break",
+      icon: Icons.FaUtensils,
+      color: "text-orange-600",
+      bg: "bg-orange-100",
+    },
+    {
+      name: "Tea Break",
+      icon: Icons.FaMugHot,
+      color: "text-amber-600",
+      bg: "bg-amber-100",
+    },
+    {
+      name: "Sports",
+      icon: Icons.FaFutbol,
+      color: "text-green-600",
+      bg: "bg-green-100",
+    },
+    {
+      name: "Library",
+      icon: Icons.FaBookReader,
+      color: "text-purple-600",
+      bg: "bg-purple-100",
+    },
+    {
+      name: "Gym",
+      icon: Icons.FaDumbbell,
+      color: "text-gray-600",
+      bg: "bg-gray-100",
+    },
+    {
+      name: "Music",
+      icon: Icons.FaMusic,
+      color: "text-indigo-600",
+      bg: "bg-indigo-100",
+    },
+    {
+      name: "Yoga",
+      icon: Icons.FaYinYang,
+      color: "text-teal-600",
+      bg: "bg-teal-100",
+    },
+    {
+      name: "Games",
+      icon: Icons.FaGamepad,
+      color: "text-violet-600",
+      bg: "bg-violet-100",
+    },
+    {
+      name: "Snacks",
+      icon: Icons.FaApple,
+      color: "text-red-600",
+      bg: "bg-red-100",
+    },
   ];
 
   function getCurrentAcademicYear() {
@@ -118,38 +162,82 @@ const Timetable = () => {
     return `Semester ${semesterNumber}`;
   };
 
-  const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  const daysOfWeek = [
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+  ];
 
   const getNextTimeSlot = (currentSlot) => {
     const index = timeSlotsList.indexOf(currentSlot);
     return timeSlotsList[index + 1];
   };
 
-  const timeSlotRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]-([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
+  const timeSlotRegex =
+    /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]-([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
   const batchDivisionRequiredTypes = ["Lab"];
 
   const getBreakIcon = (breakName) => {
     const name = breakName?.toLowerCase() || "";
     if (name.includes("lunch")) {
-      return { icon: Icons.FaUtensils, color: "text-orange-600", bg: "bg-orange-100" };
+      return {
+        icon: Icons.FaUtensils,
+        color: "text-orange-600",
+        bg: "bg-orange-100",
+      };
     } else if (name.includes("tea") || name.includes("coffee")) {
-      return { icon: Icons.FaMugHot, color: "text-amber-600", bg: "bg-amber-100" };
+      return {
+        icon: Icons.FaMugHot,
+        color: "text-amber-600",
+        bg: "bg-amber-100",
+      };
     } else if (name.includes("sport")) {
-      return { icon: Icons.FaFutbol, color: "text-green-600", bg: "bg-green-100" };
+      return {
+        icon: Icons.FaFutbol,
+        color: "text-green-600",
+        bg: "bg-green-100",
+      };
     } else if (name.includes("library")) {
-      return { icon: Icons.FaBookReader, color: "text-purple-600", bg: "bg-purple-100" };
+      return {
+        icon: Icons.FaBookReader,
+        color: "text-purple-600",
+        bg: "bg-purple-100",
+      };
     } else if (name.includes("gym")) {
-      return { icon: Icons.FaDumbbell, color: "text-gray-600", bg: "bg-gray-100" };
+      return {
+        icon: Icons.FaDumbbell,
+        color: "text-gray-600",
+        bg: "bg-gray-100",
+      };
     } else if (name.includes("music")) {
-      return { icon: Icons.FaMusic, color: "text-indigo-600", bg: "bg-indigo-100" };
+      return {
+        icon: Icons.FaMusic,
+        color: "text-indigo-600",
+        bg: "bg-indigo-100",
+      };
     } else if (name.includes("yoga")) {
-      return { icon: Icons.FaYinYang, color: "text-teal-600", bg: "bg-teal-100" };
+      return {
+        icon: Icons.FaYinYang,
+        color: "text-teal-600",
+        bg: "bg-teal-100",
+      };
     } else if (name.includes("game")) {
-      return { icon: Icons.FaGamepad, color: "text-violet-600", bg: "bg-violet-100" };
+      return {
+        icon: Icons.FaGamepad,
+        color: "text-violet-600",
+        bg: "bg-violet-100",
+      };
     } else if (name.includes("snack")) {
       return { icon: Icons.FaApple, color: "text-red-600", bg: "bg-red-100" };
     } else {
-      return { icon: Icons.FaCoffee, color: "text-brown-600", bg: "bg-brown-100" };
+      return {
+        icon: Icons.FaCoffee,
+        color: "text-brown-600",
+        bg: "bg-brown-100",
+      };
     }
   };
 
@@ -158,10 +246,11 @@ const Timetable = () => {
     try {
       setLoading(true);
 
-      const timetablesRes = await api.get('/timetables');
-      const timetablesData = timetablesRes.data?.data || timetablesRes.data || [];
+      const timetablesRes = await api.get("/timetables");
+      const timetablesData =
+        timetablesRes.data?.data || timetablesRes.data || [];
 
-      const batchesRes = await api.get('/batches');
+      const batchesRes = await api.get("/batches");
       let batchesData = [];
       if (batchesRes.data?.data) {
         batchesData = batchesRes.data.data;
@@ -169,8 +258,9 @@ const Timetable = () => {
         batchesData = batchesRes.data;
       }
 
-      const classroomsRes = await api.get('/classrooms');
-      const classroomsData = classroomsRes.data?.data || classroomsRes.data || [];
+      const classroomsRes = await api.get("/classrooms");
+      const classroomsData =
+        classroomsRes.data?.data || classroomsRes.data || [];
 
       let facultiesData = [];
       try {
@@ -185,8 +275,7 @@ const Timetable = () => {
       } catch (facultyErr) {
         console.error("Error fetching faculty:", facultyErr);
       }
-
-      const subjectsRes = await api.get('/subjects');
+      const subjectsRes = await api.get("/subjects");
       const subjectsData = subjectsRes.data?.data || subjectsRes.data || [];
 
       const formattedSubjects = subjectsData.map((subject) => ({
@@ -220,7 +309,7 @@ const Timetable = () => {
   useEffect(() => {
     // ✅ Faculty can view, Admin can view
     if (!isAdmin && !isFaculty) {
-      navigate('/dashboard');
+      navigate("/dashboard");
       return;
     }
     fetchAllData();
@@ -253,7 +342,10 @@ const Timetable = () => {
                 sub.semester === `Semester ${currentSemester}`,
             );
           }
-        } else if (selectedBatch.subjects && Array.isArray(selectedBatch.subjects)) {
+        } else if (
+          selectedBatch.subjects &&
+          Array.isArray(selectedBatch.subjects)
+        ) {
           subjectsForBatch = selectedBatch.subjects;
         }
 
@@ -289,13 +381,18 @@ const Timetable = () => {
 
   useEffect(() => {
     if (scheduleEntry.subject) {
-      const selectedSubject = subjects.find((s) => s._id === scheduleEntry.subject);
+      const selectedSubject = subjects.find(
+        (s) => s._id === scheduleEntry.subject,
+      );
       if (!selectedSubject) {
         setFilteredFaculty([]);
         return;
       }
 
-      const subjectCode = selectedSubject.subjectCode || selectedSubject.code || selectedSubject.name;
+      const subjectCode =
+        selectedSubject.subjectCode ||
+        selectedSubject.code ||
+        selectedSubject.name;
 
       const facultyForSubject = faculties.filter(
         (faculty) =>
@@ -317,13 +414,18 @@ const Timetable = () => {
 
   useEffect(() => {
     if (parallelEntry.subject) {
-      const selectedSubject = subjects.find((s) => s._id === parallelEntry.subject);
+      const selectedSubject = subjects.find(
+        (s) => s._id === parallelEntry.subject,
+      );
       if (!selectedSubject) {
         setFilteredParallelFaculty([]);
         return;
       }
 
-      const subjectCode = selectedSubject.subjectCode || selectedSubject.code || selectedSubject.name;
+      const subjectCode =
+        selectedSubject.subjectCode ||
+        selectedSubject.code ||
+        selectedSubject.name;
 
       const facultyForSubject = faculties.filter(
         (faculty) =>
@@ -393,12 +495,12 @@ const Timetable = () => {
     const b3Size = Math.max(0, totalStudents - 50);
 
     if (division === "B1") return Math.min(b1Size, totalStudents);
-    if (division === "B2") return totalStudents > 25 ? Math.min(b2Size, totalStudents - 25) : 0;
+    if (division === "B2")
+      return totalStudents > 25 ? Math.min(b2Size, totalStudents - 25) : 0;
     if (division === "B3") return b3Size;
 
     return 0;
   };
-
   const getBatchName = (batch) => {
     if (!batch) return "Not Assigned";
     if (typeof batch === "object") {
@@ -490,6 +592,89 @@ const Timetable = () => {
     });
   };
 
+  // Global availability checks
+  const isFacultyAvailable = (facultyId, day, timeSlot) => {
+    if (!facultyId) return true;
+
+    const existingConflict = timetables.some((tt) =>
+      (tt.schedule || []).some((entry) => {
+        if (entry.day !== day) return false;
+        const sameSlot = entry.timeSlot === timeSlot;
+        if (!sameSlot) return false;
+
+        const mainFaculty =
+          entry.faculty?._id === facultyId || entry.faculty === facultyId;
+
+        const parallelFaculty = (entry.parallelClasses || []).some(
+          (pc) => pc.faculty?._id === facultyId || pc.faculty === facultyId,
+        );
+
+        return mainFaculty || parallelFaculty;
+      }),
+    );
+
+    if (existingConflict) return false;
+
+    const currentConflict = (newTimetable.schedule || []).some((entry) => {
+      if (entry.day !== day) return false;
+      const sameSlot = entry.timeSlot === timeSlot;
+      if (!sameSlot) return false;
+
+      const mainFaculty =
+        entry.faculty?._id === facultyId || entry.faculty === facultyId;
+
+      const parallelFaculty = (entry.parallelClasses || []).some(
+        (pc) => pc.faculty?._id === facultyId || pc.faculty === facultyId,
+      );
+
+      return mainFaculty || parallelFaculty;
+    });
+
+    return !currentConflict;
+  };
+
+  const isClassroomAvailable = (classroomId, day, timeSlot) => {
+    if (!classroomId) return true;
+
+    const existingConflict = timetables.some((tt) =>
+      (tt.schedule || []).some((entry) => {
+        if (entry.day !== day) return false;
+        const sameSlot = entry.timeSlot === timeSlot;
+        if (!sameSlot) return false;
+
+        const mainRoom =
+          entry.classroom?._id === classroomId ||
+          entry.classroom === classroomId;
+
+        const parallelRoom = (entry.parallelClasses || []).some(
+          (pc) =>
+            pc.classroom?._id === classroomId || pc.classroom === classroomId,
+        );
+
+        return mainRoom || parallelRoom;
+      }),
+    );
+
+    if (existingConflict) return false;
+
+    const currentConflict = (newTimetable.schedule || []).some((entry) => {
+      if (entry.day !== day) return false;
+      const sameSlot = entry.timeSlot === timeSlot;
+      if (!sameSlot) return false;
+
+      const mainRoom =
+        entry.classroom?._id === classroomId || entry.classroom === classroomId;
+
+      const parallelRoom = (entry.parallelClasses || []).some(
+        (pc) =>
+          pc.classroom?._id === classroomId || pc.classroom === classroomId,
+      );
+
+      return mainRoom || parallelRoom;
+    });
+
+    return !currentConflict;
+  };
   const filteredTimetables = timetables.filter((timetable) => {
     if (!timetable) return false;
 
@@ -553,20 +738,188 @@ const Timetable = () => {
     });
   };
 
+  const handleTimeSlotChange = (timeSlot) => {
+    setScheduleEntry((prev) => {
+      const newTimeSlots = prev.timeSlots.includes(timeSlot)
+        ? prev.timeSlots.filter((ts) => ts !== timeSlot)
+        : [...prev.timeSlots, timeSlot];
+      return { ...prev, timeSlots: newTimeSlots };
+    });
+  };
+
+  const handleBreakTimeSlotChange = (timeSlot) => {
+    setBreakEntry((prev) => {
+      const newTimeSlots = prev.timeSlots.includes(timeSlot)
+        ? prev.timeSlots.filter((ts) => ts !== timeSlot)
+        : [...prev.timeSlots, timeSlot];
+      return { ...prev, timeSlots: newTimeSlots };
+    });
+  };
+
   const addParallelClass = () => {
-    if (!parallelEntry.subject || !parallelEntry.faculty || !parallelEntry.classroom) {
+    if (
+      !parallelEntry.subject ||
+      !parallelEntry.faculty ||
+      !parallelEntry.classroom
+    ) {
       alert("Please fill all fields for parallel class");
       return;
     }
 
-    if (batchDivisionRequiredTypes.includes(parallelEntry.type) && !parallelEntry.batchDivision) {
+    if (
+      batchDivisionRequiredTypes.includes(parallelEntry.type) &&
+      !parallelEntry.batchDivision
+    ) {
       alert("Batch division is required for Lab classes");
       return;
     }
 
-    const selectedSubject = subjects.find((s) => s._id === parallelEntry.subject);
-    const selectedFaculty = faculties.find((f) => f._id === parallelEntry.faculty);
-    const selectedClassroom = classrooms.find((c) => c._id === parallelEntry.classroom);
+    // GLOBAL CONFLICT CHECKS FOR PARALLEL CLASS
+    const facultyGlobalConflict = timetables.some((tt) =>
+      (tt.schedule || []).some((entry) => {
+        if (newTimetable._id && tt._id === newTimetable._id) return false;
+        if (entry.day !== scheduleEntry.day) return false;
+        if (!scheduleEntry.timeSlots.includes(entry.timeSlot)) return false;
+
+        const mainConflict =
+          entry.faculty?._id === parallelEntry.faculty ||
+          entry.faculty === parallelEntry.faculty;
+        const parallelConflict = (entry.parallelClasses || []).some(
+          (pc) =>
+            pc.faculty?._id === parallelEntry.faculty ||
+            pc.faculty === parallelEntry.faculty,
+        );
+        return mainConflict || parallelConflict;
+      }),
+    );
+
+    if (facultyGlobalConflict) {
+      alert(
+        `⚠️ GLOBAL CONFLICT: Faculty is already assigned in another department's timetable for the selected time slot.`,
+      );
+      return;
+    }
+
+    const classroomGlobalConflict = timetables.some((tt) =>
+      (tt.schedule || []).some((entry) => {
+        if (newTimetable._id && tt._id === newTimetable._id) return false;
+        if (entry.day !== scheduleEntry.day) return false;
+        if (!scheduleEntry.timeSlots.includes(entry.timeSlot)) return false;
+
+        const mainConflict =
+          entry.classroom?._id === parallelEntry.classroom ||
+          entry.classroom === parallelEntry.classroom;
+        const parallelConflict = (entry.parallelClasses || []).some(
+          (pc) =>
+            pc.classroom?._id === parallelEntry.classroom ||
+            pc.classroom === parallelEntry.classroom,
+        );
+        return mainConflict || parallelConflict;
+      }),
+    );
+
+    if (classroomGlobalConflict) {
+      alert(
+        `⚠️ GLOBAL CONFLICT: Classroom is already occupied in another department's timetable for the selected time slot.`,
+      );
+      return;
+    }
+
+    const currentScheduleFacultyConflict = (newTimetable.schedule || []).some(
+      (entry) => {
+        if (entry.day !== scheduleEntry.day) return false;
+        if (!scheduleEntry.timeSlots.includes(entry.timeSlot)) return false;
+
+        const mainConflict =
+          entry.faculty?._id === parallelEntry.faculty ||
+          entry.faculty === parallelEntry.faculty;
+        const parallelConflict = (entry.parallelClasses || []).some(
+          (pc) =>
+            pc.faculty?._id === parallelEntry.faculty ||
+            pc.faculty === parallelEntry.faculty,
+        );
+        return mainConflict || parallelConflict;
+      },
+    );
+
+    if (currentScheduleFacultyConflict) {
+      alert(
+        `Faculty is already assigned in the current schedule for the selected time slot.`,
+      );
+      return;
+    }
+
+    const currentScheduleClassroomConflict = (newTimetable.schedule || []).some(
+      (entry) => {
+        if (entry.day !== scheduleEntry.day) return false;
+        if (!scheduleEntry.timeSlots.includes(entry.timeSlot)) return false;
+
+        const mainConflict =
+          entry.classroom?._id === parallelEntry.classroom ||
+          entry.classroom === parallelEntry.classroom;
+        const parallelConflict = (entry.parallelClasses || []).some(
+          (pc) =>
+            pc.classroom?._id === parallelEntry.classroom ||
+            pc.classroom === parallelEntry.classroom,
+        );
+        return mainConflict || parallelConflict;
+      },
+    );
+
+    if (currentScheduleClassroomConflict) {
+      alert(
+        `Classroom is already occupied in the current schedule for the selected time slot.`,
+      );
+      return;
+    }
+
+    const parallelClassFacultyConflict = parallelClasses.some(
+      (pc) =>
+        pc.faculty?._id === parallelEntry.faculty ||
+        pc.faculty === parallelEntry.faculty,
+    );
+
+    if (parallelClassFacultyConflict) {
+      alert(
+        `Faculty is already used in another parallel class for this session.`,
+      );
+      return;
+    }
+
+    const parallelClassClassroomConflict = parallelClasses.some(
+      (pc) =>
+        pc.classroom?._id === parallelEntry.classroom ||
+        pc.classroom === parallelEntry.classroom,
+    );
+
+    if (parallelClassClassroomConflict) {
+      alert(
+        `Classroom is already used in another parallel class for this session.`,
+      );
+      return;
+    }
+
+    if (scheduleEntry.faculty === parallelEntry.faculty) {
+      alert("Faculty is already used as the main faculty for this session.");
+      return;
+    }
+
+    if (scheduleEntry.classroom === parallelEntry.classroom) {
+      alert(
+        "Classroom is already used as the main classroom for this session.",
+      );
+      return;
+    }
+
+    const selectedSubject = subjects.find(
+      (s) => s._id === parallelEntry.subject,
+    );
+    const selectedFaculty = faculties.find(
+      (f) => f._id === parallelEntry.faculty,
+    );
+    const selectedClassroom = classrooms.find(
+      (c) => c._id === parallelEntry.classroom,
+    );
 
     if (!selectedSubject || !selectedFaculty || !selectedClassroom) {
       alert("Selected options not found");
@@ -574,7 +927,7 @@ const Timetable = () => {
     }
 
     const newParallelClass = {
-      id: Date.now().toString(),
+      id: Date.now().toString() + "-" + Math.random().toString(36).substr(2, 5),
       subject: {
         _id: selectedSubject._id,
         name: selectedSubject.name,
@@ -601,6 +954,7 @@ const Timetable = () => {
     };
 
     setParallelClasses([...parallelClasses, newParallelClass]);
+
     setParallelEntry({
       subject: "",
       faculty: "",
@@ -609,28 +963,12 @@ const Timetable = () => {
       batchDivision: "",
       studentCount: 0,
     });
+
+    alert(`✅ Parallel class added successfully!`);
   };
 
   const removeParallelClass = (id) => {
     setParallelClasses(parallelClasses.filter((pc) => pc.id !== id));
-  };
-
-  const handleTimeSlotChange = (timeSlot) => {
-    setScheduleEntry((prev) => {
-      const newTimeSlots = prev.timeSlots.includes(timeSlot)
-        ? prev.timeSlots.filter((ts) => ts !== timeSlot)
-        : [...prev.timeSlots, timeSlot];
-      return { ...prev, timeSlots: newTimeSlots };
-    });
-  };
-
-  const handleBreakTimeSlotChange = (timeSlot) => {
-    setBreakEntry((prev) => {
-      const newTimeSlots = prev.timeSlots.includes(timeSlot)
-        ? prev.timeSlots.filter((ts) => ts !== timeSlot)
-        : [...prev.timeSlots, timeSlot];
-      return { ...prev, timeSlots: newTimeSlots };
-    });
   };
 
   const addScheduleEntry = () => {
@@ -651,58 +989,152 @@ const Timetable = () => {
         );
         return;
       }
+
+      if (
+        scheduleEntry.faculty &&
+        !isFacultyAvailable(scheduleEntry.faculty, scheduleEntry.day, timeSlot)
+      ) {
+        alert(`Faculty is unavailable at ${timeSlot} on ${scheduleEntry.day}`);
+        return;
+      }
+
+      if (
+        scheduleEntry.classroom &&
+        !isClassroomAvailable(
+          scheduleEntry.classroom,
+          scheduleEntry.day,
+          timeSlot,
+        )
+      ) {
+        alert(
+          `Classroom is unavailable at ${timeSlot} on ${scheduleEntry.day}`,
+        );
+        return;
+      }
     }
 
-    if (batchDivisionRequiredTypes.includes(scheduleEntry.type) && !scheduleEntry.batchDivision) {
+    if (
+      batchDivisionRequiredTypes.includes(scheduleEntry.type) &&
+      !scheduleEntry.batchDivision
+    ) {
       alert("Batch division is required for Lab classes");
       return;
     }
 
-    const newEntries = scheduleEntry.timeSlots.map((timeSlot, index) => ({
-      _id: `main-${Date.now().toString()}-${index}`,
-      day: scheduleEntry.day,
-      timeSlot: timeSlot,
-      subject: scheduleEntry.subject
-        ? {
-            _id: scheduleEntry.subject,
-            name: subjects.find((s) => s._id === scheduleEntry.subject)?.name,
-            code:
-              subjects.find((s) => s._id === scheduleEntry.subject)
-                ?.subjectCode ||
-              subjects.find((s) => s._id === scheduleEntry.subject)?.code,
-          }
-        : null,
-      faculty: scheduleEntry.faculty
-        ? {
-            _id: scheduleEntry.faculty,
-            name: getFacultyDisplayName(
-              faculties.find((f) => f._id === scheduleEntry.faculty),
-            ),
-          }
-        : null,
-      classroom: scheduleEntry.classroom
-        ? {
-            _id: scheduleEntry.classroom,
-            name: classrooms.find((c) => c._id === scheduleEntry.classroom)
-              ?.name,
-          }
-        : null,
-      type: scheduleEntry.type,
-      batchDivision: scheduleEntry.batchDivision,
-      studentCount:
-        scheduleEntry.batchDivision && selectedBatchDetails?.totalStudents
-          ? getStudentCountForDivision(
-              scheduleEntry.batchDivision,
-              selectedBatchDetails.totalStudents,
-            )
-          : scheduleEntry.studentCount,
-      parallelClasses: parallelClasses,
-    }));
+    // Check parallel class conflicts for all time slots
+    for (const pc of parallelClasses) {
+      for (const timeSlot of scheduleEntry.timeSlots) {
+        if (scheduleEntry.faculty === pc.faculty._id) {
+          alert(
+            `Parallel class faculty "${pc.faculty.name}" conflicts with main faculty at ${timeSlot}`,
+          );
+          return;
+        }
 
-    setNewTimetable({
-      ...newTimetable,
-      schedule: [...(newTimetable.schedule || []), ...newEntries],
+        if (scheduleEntry.classroom === pc.classroom._id) {
+          alert(
+            `Parallel class classroom "${pc.classroom.name}" conflicts with main classroom at ${timeSlot}`,
+          );
+          return;
+        }
+
+        if (!isFacultyAvailable(pc.faculty._id, scheduleEntry.day, timeSlot)) {
+          alert(
+            `Parallel class faculty "${pc.faculty.name}" is unavailable at ${timeSlot} on ${scheduleEntry.day}`,
+          );
+          return;
+        }
+
+        if (
+          !isClassroomAvailable(pc.classroom._id, scheduleEntry.day, timeSlot)
+        ) {
+          alert(
+            `Parallel class classroom "${pc.classroom.name}" is unavailable at ${timeSlot} on ${scheduleEntry.day}`,
+          );
+          return;
+        }
+      }
+    }
+
+    const subjectObj = scheduleEntry.subject
+      ? {
+          _id: scheduleEntry.subject,
+          name: subjects.find((s) => s._id === scheduleEntry.subject)?.name,
+          code:
+            subjects.find((s) => s._id === scheduleEntry.subject)
+              ?.subjectCode ||
+            subjects.find((s) => s._id === scheduleEntry.subject)?.code,
+        }
+      : null;
+
+    const facultyObj = scheduleEntry.faculty
+      ? {
+          _id: scheduleEntry.faculty,
+          name: getFacultyDisplayName(
+            faculties.find((f) => f._id === scheduleEntry.faculty),
+          ),
+        }
+      : null;
+
+    const classroomObj = scheduleEntry.classroom
+      ? {
+          _id: scheduleEntry.classroom,
+          name: classrooms.find((c) => c._id === scheduleEntry.classroom)?.name,
+        }
+      : null;
+
+    let studentCount = scheduleEntry.studentCount;
+    if (scheduleEntry.batchDivision && selectedBatchDetails?.totalStudents) {
+      studentCount = getStudentCountForDivision(
+        scheduleEntry.batchDivision,
+        selectedBatchDetails.totalStudents,
+      );
+    }
+
+    const currentParallelClasses = [...parallelClasses];
+
+    const newEntries = scheduleEntry.timeSlots.map((timeSlot, index) => {
+      const uniqueId = `main-${Date.now()}-${index}-${Math.random().toString(36).substr(2, 6)}`;
+
+      const parallelClassesForThisEntry = currentParallelClasses.map((pc) => ({
+        id: pc.id,
+        subject: {
+          _id: pc.subject._id,
+          name: pc.subject.name,
+          code: pc.subject.code,
+        },
+        faculty: {
+          _id: pc.faculty._id,
+          name: pc.faculty.name,
+        },
+        classroom: {
+          _id: pc.classroom._id,
+          name: pc.classroom.name,
+          building: pc.classroom.building || "",
+        },
+        type: pc.type,
+        batchDivision: pc.batchDivision || "",
+        studentCount: pc.studentCount || 0,
+      }));
+
+      return {
+        _id: uniqueId,
+        day: scheduleEntry.day,
+        timeSlot: timeSlot,
+        subject: subjectObj ? { ...subjectObj } : null,
+        faculty: facultyObj ? { ...facultyObj } : null,
+        classroom: classroomObj ? { ...classroomObj } : null,
+        type: scheduleEntry.type,
+        batchDivision: scheduleEntry.batchDivision,
+        studentCount: studentCount,
+        parallelClasses: parallelClassesForThisEntry,
+      };
     });
+
+    setNewTimetable((prev) => ({
+      ...prev,
+      schedule: [...(prev.schedule || []), ...newEntries],
+    }));
 
     setScheduleEntry({
       day: "Monday",
@@ -717,6 +1149,8 @@ const Timetable = () => {
     setParallelClasses([]);
     setShowParallelForm(false);
     setShowTimeSlotDropdown(false);
+
+    alert(`✅ ${newEntries.length} class(es) added successfully!`);
   };
 
   const addBreakEntry = () => {
@@ -764,23 +1198,21 @@ const Timetable = () => {
     });
 
     setShowBreakTimeSlotDropdown(false);
-    alert("Break(s) added successfully!");
+    alert(`✅ Break added successfully!`);
   };
 
   const removeScheduleEntry = (id) => {
-    setNewTimetable({
-      ...newTimetable,
-      schedule: (newTimetable.schedule || []).filter(
-        (entry) => entry._id !== id,
-      ),
-    });
+    setNewTimetable((prev) => ({
+      ...prev,
+      schedule: (prev.schedule || []).filter((entry) => entry._id !== id),
+    }));
   };
 
   const removeBreakEntry = (id) => {
-    setNewTimetable({
-      ...newTimetable,
-      breaks: (newTimetable.breaks || []).filter((entry) => entry._id !== id),
-    });
+    setNewTimetable((prev) => ({
+      ...prev,
+      breaks: (prev.breaks || []).filter((entry) => entry._id !== id),
+    }));
   };
 
   // ✅ Edit Timetable - Only Admin
@@ -907,7 +1339,6 @@ const Timetable = () => {
           studentCount: pc.studentCount,
         })),
       }));
-
       const breakData = (newTimetable.breaks || []).map((breakItem) => ({
         day: breakItem.day,
         timeSlot: breakItem.timeSlot,
@@ -929,10 +1360,13 @@ const Timetable = () => {
 
       let response;
       if (newTimetable._id) {
-        response = await api.put(`/timetables/${newTimetable._id}`, timetableData);
+        response = await api.put(
+          `/timetables/${newTimetable._id}`,
+          timetableData,
+        );
         alert("Timetable updated successfully!");
       } else {
-        response = await api.post('/timetables', timetableData);
+        response = await api.post("/timetables", timetableData);
         alert("Timetable created successfully!");
       }
 
@@ -1024,6 +1458,28 @@ const Timetable = () => {
     });
   };
 
+  const isSameClassEntry = (entry1, entry2) => {
+    if (!entry1 || !entry2) return false;
+
+    if (entry1.type === "break" || entry1.entryType === "break") {
+      if (entry2.type === "break" || entry2.entryType === "break") {
+        return entry1.name === entry2.name;
+      }
+      return false;
+    }
+
+    if (entry2.type === "break" || entry2.entryType === "break") {
+      return false;
+    }
+
+    const subjectMatch = entry1.subject?._id === entry2.subject?._id;
+    const facultyMatch = entry1.faculty?._id === entry2.faculty?._id;
+    const typeMatch = entry1.type === entry2.type;
+    const batchMatch = entry1.batchDivision === entry2.batchDivision;
+
+    return subjectMatch && facultyMatch && typeMatch && batchMatch;
+  };
+
   const getDisplayText = (item) => {
     if (!item) return "";
     if (typeof item === "object") {
@@ -1071,7 +1527,9 @@ const Timetable = () => {
           <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6 text-center">
             <i className="fas fa-exclamation-triangle text-4xl text-red-500 mb-4"></i>
             <h3 className="text-lg font-semibold text-red-800 dark:text-red-400 mb-2">
-              {error.includes('expired') ? 'Session Expired' : 'Error Loading Data'}
+              {error.includes("expired")
+                ? "Session Expired"
+                : "Error Loading Data"}
             </h3>
             <p className="text-red-600 dark:text-red-300">{error}</p>
             <div className="mt-4 flex gap-3 justify-center">
@@ -1081,7 +1539,7 @@ const Timetable = () => {
               >
                 Retry
               </button>
-              {error.includes('expired') && (
+              {error.includes("expired") && (
                 <button
                   onClick={() => {
                     localStorage.removeItem("auth_token");
@@ -1108,7 +1566,9 @@ const Timetable = () => {
             Timetable Management
           </h1>
           <p className="text-lg text-gray-600">
-            {isAdmin ? "Create and manage class schedules" : "View class schedules"}
+            {isAdmin
+              ? "Create and manage class schedules"
+              : "View class schedules"}
           </p>
         </div>
 
@@ -1263,7 +1723,8 @@ const Timetable = () => {
                       <i className="fas fa-building text-gray-400"></i>
                       <span className="text-sm text-gray-600">Department</span>
                     </div>
-                    <span className="font-bold text-gray-800">
+                    {/* <span className="font-bold text-gray-800 dark:text-gray-200"> */}
+                    <span className="text-gray-900 dark:text-gray-50">
                       {batchDepartment}
                     </span>
                   </div>
@@ -1283,10 +1744,11 @@ const Timetable = () => {
                   {isAdmin && (
                     <button
                       onClick={() => editTimetable(timetable)}
-                      className="flex-1 px-3 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-sm"
+                      className="px-4 py-1 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                  title="Edit"
                     >
                       <i className="fas fa-edit mr-2"></i>
-                      Edit
+                    
                     </button>
                   )}
 
@@ -1294,18 +1756,16 @@ const Timetable = () => {
                   {isAdmin && (
                     <button
                       onClick={() => deleteTimetable(timetable._id)}
-                      className="flex-1 px-3 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 text-sm"
+                                  className="px-4 py-1 bg-red-100 text-red-700 rounded-md hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                  title="Delete"
                     >
                       <i className="fas fa-trash mr-2"></i>
-                      Delete
                     </button>
                   )}
 
                   {/* ✅ Faculty - View Only Label */}
                   {isFaculty && !isAdmin && (
-                    <div className="flex-1 text-center text-sm text-gray-500 py-2">
-                    
-                    </div>
+                    <div className="flex-1 text-center text-sm text-gray-500 py-2"></div>
                   )}
                 </div>
               </div>
@@ -1333,7 +1793,9 @@ const Timetable = () => {
               No timetables yet
             </h3>
             <p className="text-gray-500">
-              {isAdmin ? "Create your first timetable using the button above" : "No timetables available"}
+              {isAdmin
+                ? "Create your first timetable using the button above"
+                : "No timetables available"}
             </p>
           </div>
         )}
@@ -1342,7 +1804,6 @@ const Timetable = () => {
       {/* Create/Edit Timetable Modal - Only Admin */}
       {showCreateModal && isAdmin && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          {/* ... (rest of modal code remains same) ... */}
           <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
             <div className="bg-blue-600 p-6">
               <h2 className="text-2xl font-bold text-white">
@@ -1474,7 +1935,7 @@ const Timetable = () => {
                         {timeSlotsList.map((timeSlot) => (
                           <label
                             key={timeSlot}
-                            className="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer"
+                            className="flex items-center px-3 py-2 hover:bg-gray-50/2 cursor-pointer"
                           >
                             <input
                               type="checkbox"
@@ -1566,7 +2027,7 @@ const Timetable = () => {
                       onChange={handleScheduleChange}
                       className="w-full px-3 py-2 border rounded-md"
                     >
-                      <option value="Theory">Select Theory</option>
+                      <option value="Theory">Theory</option>
                       <option value="Core">Core</option>
                       <option value="Lab">Lab</option>
                       <option value="MDM">MDM</option>
@@ -1712,7 +2173,7 @@ const Timetable = () => {
                             onChange={handleParallelChange}
                             className="w-full px-3 py-2 border rounded-md"
                           >
-                            <option value="Theory">Select Theory</option>
+                            <option value="Theory">Theory</option>
                             <option value="Core">Core</option>
                             <option value="Lab">Lab</option>
                             <option value="MDM">MDM</option>
@@ -1770,7 +2231,11 @@ const Timetable = () => {
 
                         <div>
                           <button
-                            onClick={addParallelClass}
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              addParallelClass();
+                            }}
                             className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
                           >
                             Add
@@ -1935,51 +2400,167 @@ const Timetable = () => {
                 {newTimetable.schedule?.length > 0 ||
                 newTimetable.breaks?.length > 0 ? (
                   <div className="space-y-3">
-                    {newTimetable.schedule?.map((entry) => (
-                      <div
-                        key={entry._id}
-                        className="flex items-center justify-between p-3 rounded"
-                      >
-                        <div className="flex-1">
-                          <span className="font-medium">
-                            {entry.day} {entry.timeSlot}
-                          </span>
-                          {entry.subject && (
-                            <div className="flex justify-between items-center border border-gray-300 rounded px-3 py-1 mt-1 bg-white max-w-xs">
-                              <span className="text-sm font-medium">
-                                {entry.subject.code}
-                                {entry.type && (
-                                  <span className="ml-1 text-xs text-gray-600">
-                                    ({entry.type})
-                                  </span>
-                                )}
-                                {entry.batchDivision && (
-                                  <span className="ml-1 text-xs">
-                                    -{entry.batchDivision}
-                                  </span>
-                                )}
+                    {(() => {
+                      const groupedSchedule = {};
+                      (newTimetable.schedule || []).forEach((entry) => {
+                        const subjectId = entry.subject?._id || "no-subject";
+                        const facultyId = entry.faculty?._id || "no-faculty";
+                        const classroomId =
+                          entry.classroom?._id || "no-classroom";
+                        const type = entry.type || "no-type";
+                        const batchDivision = entry.batchDivision || "no-batch";
+                        const day = entry.day;
+
+                        const parallelKey = (entry.parallelClasses || [])
+                          .map(
+                            (pc) =>
+                              `${pc.subject?._id || "no-sub"}-${pc.faculty?._id || "no-fac"}-${pc.classroom?._id || "no-class"}-${pc.type || "no-type"}-${pc.batchDivision || "no-batch"}`,
+                          )
+                          .sort()
+                          .join("|");
+
+                        const key = `${day}-${subjectId}-${facultyId}-${classroomId}-${type}-${batchDivision}-${parallelKey}`;
+
+                        if (!groupedSchedule[key]) {
+                          groupedSchedule[key] = {
+                            ...entry,
+                            timeSlots: [entry.timeSlot],
+                            _ids: [entry._id],
+                          };
+                        } else {
+                          groupedSchedule[key].timeSlots.push(entry.timeSlot);
+                          groupedSchedule[key]._ids.push(entry._id);
+                        }
+                      });
+
+                      const sortedGroups = Object.values(groupedSchedule).sort(
+                        (a, b) => {
+                          const dayOrder =
+                            daysOfWeek.indexOf(a.day) -
+                            daysOfWeek.indexOf(b.day);
+                          if (dayOrder !== 0) return dayOrder;
+                          const getMinutes = (time) => {
+                            if (!time) return 0;
+                            const [h, m] = time.split(":").map(Number);
+                            return h * 60 + (m || 0);
+                          };
+                          const aStart = a.timeSlots[0]
+                            ? getMinutes(a.timeSlots[0].split("-")[0])
+                            : 0;
+                          const bStart = b.timeSlots[0]
+                            ? getMinutes(b.timeSlots[0].split("-")[0])
+                            : 0;
+                          return aStart - bStart;
+                        },
+                      );
+
+                      return sortedGroups.map((groupEntry) => {
+                        const sortedTimeSlots = [
+                          ...groupEntry.timeSlots,
+                        ].sort();
+                        const timeSlotDisplay = sortedTimeSlots.join(", ");
+
+                        return (
+                          <div
+                            key={groupEntry._ids.join("-")}
+                            className="flex items-center justify-between p-3 rounded border border-gray-400"
+                          >
+                            <div className="flex-1">
+                              <span className="font-medium">
+                                {groupEntry.day} {timeSlotDisplay}
                               </span>
-                              {entry.classroom && (
-                                <span className="text-xs font-medium text-gray-6 border-l border-gray-300 pl-2 ml-2">
-                                  {entry.classroom.name}
-                                </span>
+                              {groupEntry.subject && (
+                                <div className="flex items-center gap-2 mt-1 flex-wrap">
+                                  <div className="flex items-center border border-gray-400 rounded px-3 py-1 bg-gray-50">
+                                    <span className="text-sm font-medium">
+                                      {groupEntry.subject.code ||
+                                        groupEntry.subject.name}
+                                      {groupEntry.type && (
+                                        <span className="ml-1 text-xs text-gray-500">
+                                          ({groupEntry.type})
+                                        </span>
+                                      )}
+                                      {groupEntry.batchDivision && (
+                                        <span className="ml-1 text-xs">
+                                          -{groupEntry.batchDivision}
+                                        </span>
+                                      )}
+                                    </span>
+                                  </div>
+                                  {groupEntry.classroom && (
+                                    <div className="flex items-center border border-gray-400 rounded px-3 py-1 bg-gray-50">
+                                      <span className="text-xs font-medium text-gray-600">
+                                        {groupEntry.classroom.name}
+                                      </span>
+                                    </div>
+                                  )}
+                                  {groupEntry.faculty && (
+                                    <div className="flex items-center border border-gray-400 rounded px-3 py-1 bg-gray-50">
+                                      <span className="text-xs font-medium text-gray-600">
+                                        {groupEntry.faculty.name}
+                                      </span>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                              {groupEntry.parallelClasses?.length > 0 && (
+                                <div className="mt-1 space-y-1">
+                                  {groupEntry.parallelClasses.map((pc, idx) => (
+                                    <div
+                                      key={idx}
+                                      className="flex items-center gap-2 mt-1 flex-wrap"
+                                    >
+                                      <div className="flex items-center border border-gray-400 rounded px-3 py-1 bg-gray-50">
+                                        <span className="text-sm font-medium text-gray-700">
+                                          +
+                                          {pc.subject?.code ||
+                                            pc.subject?.name ||
+                                            "Unknown"}
+                                          {pc.type && (
+                                            <span className="ml-1 text-xs text-gray-500">
+                                              ({pc.type})
+                                            </span>
+                                          )}
+                                          {pc.batchDivision && (
+                                            <span className="ml-1 text-xs">
+                                              -{pc.batchDivision}
+                                            </span>
+                                          )}
+                                        </span>
+                                      </div>
+                                      {pc.classroom && (
+                                        <div className="flex items-center border border-gray-400 rounded px-3 py-1 bg-gray-50">
+                                          <span className="text-xs font-medium text-gray-600">
+                                            {pc.classroom.name}
+                                          </span>
+                                        </div>
+                                      )}
+                                      {pc.faculty && (
+                                        <div className="flex items-center border border-gray-400 rounded px-3 py-1 bg-gray-50">
+                                          <span className="text-xs font-medium text-gray-600">
+                                            {pc.faculty.name}
+                                          </span>
+                                        </div>
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
                               )}
                             </div>
-                          )}
-                          {entry.parallelClasses?.length > 0 && (
-                            <span className="ml-2 text-xs text-purple-600">
-                              +{entry.parallelClasses.length} parallel
-                            </span>
-                          )}
-                        </div>
-                        <button
-                          onClick={() => removeScheduleEntry(entry._id)}
-                          className="text-red-500 hover:text-red-700"
-                        >
-                          <i className="fas fa-trash"></i>
-                        </button>
-                      </div>
-                    ))}
+                            <button
+                              onClick={() => {
+                                groupEntry._ids.forEach((id) =>
+                                  removeScheduleEntry(id),
+                                );
+                              }}
+                              className="text-red-500 hover:text-red-700 ml-4 p-2"
+                            >
+                              <i className="fas fa-trash"></i>
+                            </button>
+                          </div>
+                        );
+                      });
+                    })()}
 
                     {newTimetable.breaks?.map((breakItem) => {
                       const breakIcon = getBreakIcon(breakItem.name);
@@ -1988,7 +2569,7 @@ const Timetable = () => {
                       return (
                         <div
                           key={breakItem._id}
-                          className="flex items-center justify-between p-3 rounded"
+                          className="flex items-center justify-between p-3 rounded border border-gray-400"
                         >
                           <div className="flex items-center flex-1">
                             <div
@@ -2080,168 +2661,189 @@ const Timetable = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {(() => {
-                      const sortedTimeSlots = timeSlotsList;
-                      return timeSlotsList.map((timeSlot) => (
-                        <tr key={timeSlot}>
-                          <td className="px-4 py-2 border font-medium bg-gray-50">
-                            {timeSlot}
-                          </td>
-                          {daysOfWeek.map((day) => {
-                            const allEntries = getSortedEntriesForDay(
-                              selectedTimetable,
-                              day,
-                            );
+                    {timeSlotsList.map((timeSlot, slotIndex) => (
+                      <tr key={timeSlot}>
+                        <td className="px-4 py-2 border font-medium bg-gray-50">
+                          {timeSlot}
+                        </td>
+                        {daysOfWeek.map((day) => {
+                          const allEntries = getSortedEntriesForDay(
+                            selectedTimetable,
+                            day,
+                          );
 
-                            const entries = allEntries.filter(
-                              (e) => e.timeSlot === timeSlot,
-                            );
-                            const currentEntry = entries[0];
+                          const entries = allEntries.filter(
+                            (e) => e.timeSlot === timeSlot,
+                          );
 
-                            const prevSlot =
-                              timeSlotsList[
-                                timeSlotsList.indexOf(timeSlot) - 1
-                              ];
-
-                            const prevEntry = allEntries.find(
-                              (e) =>
-                                e.timeSlot === prevSlot &&
-                                e.subject?._id === currentEntry?.subject?._id &&
-                                e.day === day,
-                            );
-
-                            const nextSlot = getNextTimeSlot(timeSlot);
-
-                            const nextEntry = allEntries.find(
-                              (e) =>
-                                e.timeSlot === nextSlot &&
-                                e.subject?._id === currentEntry?.subject?._id &&
-                                e.day === day,
-                            );
-
+                          if (entries.length === 0) {
                             return (
                               <td
                                 key={`${day}-${timeSlot}`}
-                                className="border align-middle text-center h-[90px] min-w-[120px] p-0"
+                                className="px-4 py-2 border align-middle text-center"
                               >
-                                {entries.length > 0 ? (
-                                  entries.map((entry, idx) => {
-                                    if (
-                                      entry.type === "break" ||
-                                      entry.entryType === "break"
-                                    ) {
-                                      const breakIcon = getBreakIcon(
-                                        entry.name,
-                                      );
-                                      const IconComponent = breakIcon.icon;
-
-                                      return (
-                                        <div
-                                          key={idx}
-                                          className={`mx-1 my-1 p-2 rounded flex items-center justify-center ${breakIcon.bg}`}
-                                        >
-                                          <div
-                                            className={`font-medium text-sm ${breakIcon.color}`}
-                                          >
-                                            <IconComponent className="inline mr-1" />
-                                            {entry.name || "Break"}
-                                          </div>
-                                        </div>
-                                      );
-                                    } else {
-                                      return (
-                                        <div
-                                          key={idx}
-                                          className="h-full flex flex-col justify-center"
-                                        >
-                                          {entry.subject && (
-                                            <div className="p-2 bg-blue-100 rounded mb-1 mt-1 mx-1 ">
-                                              <div className="flex justify-between items-center border border-blue-300 rounded px-2 py-1 bg-white">
-                                                <span className="font-medium text-sm text-blue-800">
-                                                  {getDisplayText(
-                                                    entry.subject,
-                                                  )}
-                                                  {entry.type && (
-                                                    <span className="ml-1 text-xs text-gray-500">
-                                                      ({entry.type})
-                                                    </span>
-                                                  )}
-                                                  {entry.batchDivision && (
-                                                    <span className="ml-1 text-xs">
-                                                      -{entry.batchDivision}
-                                                    </span>
-                                                  )}
-                                                </span>
-                                                {entry.classroom && (
-                                                  <span className="text-xs font-medium text-gray-600 border-l border-blue-300 pl-2 ml-2">
-                                                    {entry.classroom.name}
-                                                  </span>
-                                                )}
-                                              </div>
-                                              <div className="text-xs text-gray-600 mt-1 mx-1">
-                                                {getDisplayText(entry.faculty)}
-                                              </div>
-                                            </div>
-                                          )}
-
-                                          {entry.parallelClasses &&
-                                            entry.parallelClasses.length >
-                                              0 && (
-                                              <div className="mt-1 mx-1">
-                                                {entry.parallelClasses.map(
-                                                  (pc, pIdx) => (
-                                                    <div
-                                                      key={pIdx}
-                                                      className="p-2 bg-purple-100 rounded mb-2 mt-1 mx-1"
-                                                    >
-                                                      <div className="flex justify-between items-center border border-purple-300 rounded px-2 py-1 bg-white">
-                                                        <span className="font-medium text-sm text-purple-800">
-                                                          {getDisplayText(
-                                                            pc.subject,
-                                                          )}
-                                                          {pc.type && (
-                                                            <span className="ml-1 text-xs text-gray-500">
-                                                              ({pc.type})
-                                                            </span>
-                                                          )}
-                                                          {pc.batchDivision && (
-                                                            <span className="ml-1 text-xs">
-                                                              -
-                                                              {pc.batchDivision}
-                                                            </span>
-                                                          )}
-                                                        </span>
-                                                        {pc.classroom && (
-                                                          <span className="text-xs font-medium text-gray-600 border-l border-purple-300 pl-2 ml-2">
-                                                            {pc.classroom.name}
-                                                          </span>
-                                                        )}
-                                                      </div>
-                                                      <div className="text-xs text-gray-600 mt-1">
-                                                        {getDisplayText(
-                                                          pc.faculty,
-                                                        )}
-                                                      </div>
-                                                    </div>
-                                                  ),
-                                                )}
-                                              </div>
-                                            )}
-                                        </div>
-                                      );
-                                    }
-                                  })
-                                ) : (
-                                  <div className="h-full flex items-center justify-center text-gray-300 text-xs">
-                                    -
-                                  </div>
-                                )}
+                                <div className="text-gray-300 text-xs">-</div>
                               </td>
                             );
-                          })}
-                        </tr>
-                      ));
-                    })()}
+                          }
+
+                          const currentEntry = entries[0];
+                          const isBreak =
+                            currentEntry.type === "break" ||
+                            currentEntry.entryType === "break";
+
+                          let isPartOfRowspan = false;
+                          if (slotIndex > 0) {
+                            const prevSlot = timeSlotsList[slotIndex - 1];
+                            const prevEntries = allEntries.filter(
+                              (e) => e.timeSlot === prevSlot,
+                            );
+
+                            if (prevEntries.length > 0) {
+                              const prevEntry = prevEntries[0];
+                              if (isSameClassEntry(prevEntry, currentEntry)) {
+                                isPartOfRowspan = true;
+                              }
+                            }
+                          }
+
+                          if (isPartOfRowspan) {
+                            return null;
+                          }
+
+                          let consecutiveCount = 1;
+                          let checkIndex = slotIndex + 1;
+
+                          while (checkIndex < timeSlotsList.length) {
+                            const nextSlot = timeSlotsList[checkIndex];
+                            const nextEntries = allEntries.filter(
+                              (e) => e.timeSlot === nextSlot,
+                            );
+
+                            if (nextEntries.length === 0) break;
+
+                            const nextEntry = nextEntries[0];
+                            if (isSameClassEntry(currentEntry, nextEntry)) {
+                              consecutiveCount++;
+                              checkIndex++;
+                            } else {
+                              break;
+                            }
+                          }
+
+                          const rowSpan = consecutiveCount;
+
+                          return (
+                            <td
+                              key={`${day}-${timeSlot}`}
+                              rowSpan={rowSpan}
+                              className="border align-middle text-center h-[90px] min-w-[120px] p-0"
+                            >
+                              {entries.map((entry, idx) => {
+                                if (entry.day !== day) return null;
+
+                                if (
+                                  entry.type === "break" ||
+                                  entry.entryType === "break"
+                                ) {
+                                  const breakIcon = getBreakIcon(entry.name);
+                                  const IconComponent = breakIcon.icon;
+
+                                  return (
+                                    <div
+                                      key={idx}
+                                      className={`p-2 ${breakIcon.bg} rounded m-1`}
+                                    >
+                                      <div
+                                        className={`font-medium text-sm ${breakIcon.color}`}
+                                      >
+                                        <IconComponent className="inline mr-1" />
+                                        {entry.name || "Break"}
+                                      </div>
+                                    </div>
+                                  );
+                                } else {
+                                  return (
+                                    <div
+                                      key={idx}
+                                      className="h-full flex flex-col justify-center"
+                                    >
+                                      {entry.subject && (
+                                        <div className="p-2 bg-blue-100 rounded mb-1 mt-1 mx-1">
+                                          <div className="flex justify-between items-center border border-blue-300 rounded px-2 py-1 bg-white">
+                                            <span className="font-medium text-sm text-blue-800">
+                                              {getDisplayText(entry.subject)}
+                                              {entry.type && (
+                                                <span className="ml-1 text-xs text-gray-500">
+                                                  ({entry.type})
+                                                </span>
+                                              )}
+                                              {entry.batchDivision && (
+                                                <span className="ml-1 text-xs">
+                                                  -{entry.batchDivision}
+                                                </span>
+                                              )}
+                                            </span>
+                                            {entry.classroom && (
+                                              <span className="text-xs font-medium text-gray-600 border-l border-blue-300 pl-2 ml-2">
+                                                {entry.classroom.name}
+                                              </span>
+                                            )}
+                                          </div>
+                                          <div className="text-xs text-gray-600 mt-1 mx-1">
+                                            {getDisplayText(entry.faculty)}
+                                          </div>
+                                        </div>
+                                      )}
+
+                                      {entry.parallelClasses &&
+                                        entry.parallelClasses.length > 0 && (
+                                          <div className="mt-1 mx-1">
+                                            {entry.parallelClasses.map(
+                                              (pc, pIdx) => (
+                                                <div
+                                                  key={pIdx}
+                                                  className="p-2 bg-purple-100 rounded mt-1 mx-1"
+                                                >
+                                                  <div className="flex justify-between items-center border border-purple-300 rounded px-2 py-1 bg-white">
+                                                    <span className="font-medium text-sm text-purple-800">
+                                                      {getDisplayText(
+                                                        pc.subject,
+                                                      )}
+                                                      {pc.type && (
+                                                        <span className="ml-1 text-xs text-gray-500">
+                                                          ({pc.type})
+                                                        </span>
+                                                      )}
+                                                      {pc.batchDivision && (
+                                                        <span className="ml-1 text-xs">
+                                                          -{pc.batchDivision}
+                                                        </span>
+                                                      )}
+                                                    </span>
+                                                    {pc.classroom && (
+                                                      <span className="text-xs font-medium text-gray-600 border-l border-purple-300 pl-2 ml-2">
+                                                        {pc.classroom.name}
+                                                      </span>
+                                                    )}
+                                                  </div>
+                                                  <div className="text-xs text-gray-600 mt-1">
+                                                    {getDisplayText(pc.faculty)}
+                                                  </div>
+                                                </div>
+                                              ),
+                                            )}
+                                          </div>
+                                        )}
+                                    </div>
+                                  );
+                                }
+                              })}
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>

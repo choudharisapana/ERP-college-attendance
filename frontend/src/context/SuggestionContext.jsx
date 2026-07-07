@@ -34,7 +34,6 @@ export const SuggestionProvider = ({ children }) => {
 
   const { user } = useAuth();
 
-  // Fetch suggestions with current filters
   const fetchSuggestions = async () => {
     try {
       setLoading(true);
@@ -51,7 +50,6 @@ export const SuggestionProvider = ({ children }) => {
     }
   };
 
-  // Fetch statistics only
   const fetchStats = async () => {
     try {
       const data = await suggestionService.getSuggestionStats();
@@ -61,14 +59,12 @@ export const SuggestionProvider = ({ children }) => {
     }
   };
 
-  // Submit new suggestion
   const submitSuggestion = async (suggestionData) => {
     try {
       setLoading(true);
       setError(null);
       const response = await suggestionService.submitSuggestion(suggestionData);
-      
-      // Refresh suggestions and stats after successful submission
+
       await fetchSuggestions();
       await fetchStats();
       
@@ -81,7 +77,6 @@ export const SuggestionProvider = ({ children }) => {
     }
   };
 
-  // Upvote suggestion
   const upvoteSuggestion = async (id) => {
     if (!user) {
       return { success: false, message: "Please login to upvote" };
@@ -89,8 +84,7 @@ export const SuggestionProvider = ({ children }) => {
 
     try {
       const response = await suggestionService.upvoteSuggestion(id);
-      
-      // Update local state
+
       setSuggestions(prev =>
         prev.map(suggestion =>
           suggestion._id === id
@@ -105,7 +99,6 @@ export const SuggestionProvider = ({ children }) => {
     }
   };
 
-  // Update filters
   const updateFilters = (newFilters) => {
     setFilters((prev) => ({
       ...prev,
@@ -114,17 +107,14 @@ export const SuggestionProvider = ({ children }) => {
     }));
   };
 
-  // Change page
   const changePage = (newPage) => {
     setFilters((prev) => ({ ...prev, page: newPage }));
   };
 
-  // Load suggestions when filters change
   useEffect(() => {
     fetchSuggestions();
   }, [filters]);
 
-  // Load stats on mount
   useEffect(() => {
     fetchStats();
   }, []);

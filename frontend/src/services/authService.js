@@ -1,10 +1,8 @@
-// frontend/src/services/authService.js
 import api from './api';
 
 const AUTH_TOKEN_KEY = 'auth_token';
 const USER_DATA_KEY = 'user_data';
 
-// Helper functions
 const setAuthToken = (token) => {
   if (token) {
     localStorage.setItem(AUTH_TOKEN_KEY, token);
@@ -28,13 +26,12 @@ const getUserData = () => {
   return userData ? JSON.parse(userData) : null;
 };
 
-// Register user
 export const registerUser = async (userData) => {
   try {
     const response = await api.post('/auth/register', userData);
     
     if (response.data.success) {
-      // Check if verification is required
+
       if (response.data.requiresVerification) {
         return {
           success: true,
@@ -43,8 +40,7 @@ export const registerUser = async (userData) => {
           message: response.data.message
         };
       }
-      
-      // If no verification required (old flow), set token
+
       if (response.data.token) {
         setAuthToken(response.data.token);
         setUserData(response.data.user);
@@ -71,7 +67,6 @@ export const registerUser = async (userData) => {
   }
 };
 
-// Login user
 export const loginUser = async (email, password) => {
   try {
     const response = await api.post('/auth/login', { email, password });
@@ -93,8 +88,7 @@ export const loginUser = async (email, password) => {
     };
   } catch (error) {
     console.error('Login error:', error);
-    
-    // Check if it's a verification required error
+
     if (error.response?.status === 403 && error.response?.data?.requiresVerification) {
       return {
         success: false,
@@ -111,7 +105,6 @@ export const loginUser = async (email, password) => {
   }
 };
 
-// Verify email
 export const verifyEmail = async (token) => {
   try {
     const response = await api.get(`/auth/verify-email/${token}`);
@@ -129,7 +122,6 @@ export const verifyEmail = async (token) => {
   }
 };
 
-// Resend verification email
 export const resendVerificationEmail = async (email) => {
   try {
     const response = await api.post('/auth/resend-verification', { email });
@@ -147,29 +139,24 @@ export const resendVerificationEmail = async (email) => {
   }
 };
 
-// Logout user
 export const logoutUser = () => {
   setAuthToken(null);
   setUserData(null);
 };
 
-// Get current user
 export const getCurrentUser = () => {
   return getUserData();
 };
 
-// Check if user is authenticated
 export const isAuthenticated = () => {
   const token = localStorage.getItem(AUTH_TOKEN_KEY);
   return !!token;
 };
 
-// Get auth token
 export const getAuthToken = () => {
   return localStorage.getItem(AUTH_TOKEN_KEY);
 };
 
-// Initialize auth from stored token
 export const initializeAuth = () => {
   const token = getAuthToken();
   if (token) {

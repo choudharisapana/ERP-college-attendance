@@ -1,4 +1,3 @@
-// frontend/src/components/pages/Settings.jsx
 import React, { useState, useEffect } from "react";
 import { useSettings } from "../../context/SettingsContext";
 import { useNavigate } from "react-router-dom";
@@ -107,7 +106,6 @@ const Settings = () => {
 
   return (
     <div className="max-w-5xl mx-auto my-20 px-4">
-      {/* Center Aligned Header */}
       <div className="text-center mb-12">
         <h1 className="text-6xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
           Settings
@@ -116,13 +114,11 @@ const Settings = () => {
           Customize your experience and manage your account
         </p>
       </div>
-
-      {/* Message Alert */}
       {message.text && (
         <div
           className={`p-4 rounded-lg mb-6 flex items-center gap-2.5 ${
             message.type === "success"
-              ? "bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-300 border border-green-200 dark:border-green-800"
+              ? "bg-green-100 dark:bg-green-600 text-green-900 dark:text-green-300 border border-green-500 dark:border-green-800"
               : "bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-300 border border-red-200 dark:border-red-800"
           }`}
         >
@@ -130,11 +126,7 @@ const Settings = () => {
           <span>{message.text}</span>
         </div>
       )}
-
-      {/* Settings Cards */}
       <div className="space-y-6">
-        
-        {/* ✅ Profile Settings Card - NEW */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
             <div className="flex items-center gap-2">
@@ -165,7 +157,6 @@ const Settings = () => {
           </div>
         </div>
 
-        {/* Appearance Settings */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
             <div className="flex items-center gap-2">
@@ -237,7 +228,6 @@ const Settings = () => {
           </div>
         </div>
 
-        {/* Layout Settings */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
             <div className="flex items-center gap-2">
@@ -270,13 +260,9 @@ const Settings = () => {
             </div>
           </div>
         </div>
-
-        {/* ❌ REMOVED: Email Notifications Card */}
-        {/* Email Notifications completely removed */}
-
       </div>
 
-      {/* Bottom Buttons */}
+      
       <div className="flex justify-center gap-4 mt-10 pt-6 border-t border-gray-200 dark:border-gray-700">
         <button 
           onClick={handleReset} 

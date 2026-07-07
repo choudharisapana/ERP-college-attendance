@@ -1,26 +1,29 @@
-// frontend/src/components/pages/ForgotPassword.jsx
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import axios from 'axios';
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import api from "../../services/api";
 
 const ForgotPassword = () => {
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
-  const [error, setError] = useState('');
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setMessage('');
-    setError('');
+    setMessage("");
+    setError("");
 
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/forgot-password', { email });
-      setMessage(response.data.message || 'Password reset link sent to your email.');
-      setEmail('');
+      const response = await api.post("/auth/forgot-password", {
+        email,
+      });
+      setMessage(
+        response.data.message || "Password reset link sent to your email.",
+      );
+      setEmail("");
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to send reset link.');
+      setError(err.response?.data?.message || "Failed to send reset link.");
     } finally {
       setLoading(false);
     }
@@ -34,7 +37,8 @@ const ForgotPassword = () => {
             Reset Password
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Enter your email address and we'll send you a link to reset your password.
+            Enter your email address and we'll send you a link to reset your
+            password.
           </p>
         </div>
 
@@ -51,7 +55,9 @@ const ForgotPassword = () => {
           )}
 
           <div>
-            <label htmlFor="email" className="sr-only">Email address</label>
+            <label htmlFor="email" className="sr-only">
+              Email address
+            </label>
             <input
               id="email"
               name="email"
@@ -70,14 +76,8 @@ const ForgotPassword = () => {
               disabled={loading}
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
             >
-              {loading ? 'Sending...' : 'Send Reset Link'}
+              {loading ? "Sending..." : "Send Reset Link"}
             </button>
-          </div>
-
-          <div className="text-center">
-            <Link to="/login" className="text-sm text-blue-600 hover:text-blue-500">
-              Back to Login
-            </Link>
           </div>
         </form>
       </div>

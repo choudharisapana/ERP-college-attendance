@@ -1,4 +1,3 @@
-// frontend/src/components/pages/Register.jsx
 import React, { useState } from 'react';
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate, Link } from 'react-router-dom';
@@ -13,7 +12,7 @@ const Register = () => {
     department: '',
     semester: '',
     adminKey: '',
-    facultyKey: '', // ✅ ADDED
+    facultyKey: '',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -100,7 +99,6 @@ const Register = () => {
       return;
     }
 
-    // ✅ Student validation
     if (formData.role === 'user') {
       if (!formData.department) {
         setError('Please select a department for student account');
@@ -115,7 +113,6 @@ const Register = () => {
       }
     }
 
-    // ✅ Admin validation
     if (formData.role === 'admin') {
       if (!formData.adminKey.trim()) {
         setError('Admin secret key is required');
@@ -124,7 +121,6 @@ const Register = () => {
       }
     }
 
-    // ✅ Faculty validation
     if (formData.role === 'faculty') {
       if (!formData.facultyKey.trim()) {
         setError('Faculty secret key is required');
@@ -146,7 +142,7 @@ const Register = () => {
         department: formData.role === 'user' ? formData.department : undefined,
         semester: semesterValue,
         adminKey: formData.adminKey.trim(),
-        facultyKey: formData.facultyKey.trim(), // ✅ ADDED
+        facultyKey: formData.facultyKey.trim(),
       };
 
       console.log("📤 Registering user:", userData);
@@ -166,7 +162,7 @@ const Register = () => {
             department: '',
             semester: '',
             adminKey: '',
-            facultyKey: '', // ✅ RESET
+            facultyKey: '', 
           });
         } else {
           navigate('/dashboard');
@@ -205,7 +201,7 @@ const Register = () => {
                 </div>
                 <div className="ml-3">
                   <h3 className="text-sm font-medium text-green-800 dark:text-green-300">
-                    Registration Successful! 🎉
+                    Registration Successful! 
                   </h3>
                   <div className="mt-2 text-sm text-green-700 dark:text-green-400">
                     <p>Please check your email <strong>{registeredEmail}</strong> to verify your account.</p>
@@ -233,7 +229,7 @@ const Register = () => {
 
           {!showVerificationMessage && (
             <form className="space-y-5" onSubmit={handleSubmit} autoComplete="off">
-              {/* Name Field */}
+
               <div>
                 <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Full Name
@@ -255,7 +251,6 @@ const Register = () => {
                 </div>
               </div>
 
-              {/* Email Field */}
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Email Address
@@ -278,7 +273,6 @@ const Register = () => {
                 </div>
               </div>
 
-              {/* ✅ Role Field - 3 Options */}
               <div>
                 <label htmlFor="role" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Account Type
@@ -304,7 +298,6 @@ const Register = () => {
                 </div>
               </div>
 
-              {/* ✅ Faculty Key - Only for Faculty */}
               {formData.role === 'faculty' && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -331,7 +324,6 @@ const Register = () => {
                 </div>
               )}
 
-              {/* ✅ Admin Key - Only for Admin */}
               {formData.role === 'admin' && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -358,7 +350,6 @@ const Register = () => {
                 </div>
               )}
 
-              {/* ✅ Department & Semester - Only for Student */}
               {formData.role === 'user' && (
                 <>
                   <div>
@@ -413,7 +404,6 @@ const Register = () => {
                 </>
               )}
 
-              {/* Info Box for Faculty/Admin */}
               {(formData.role === 'faculty' || formData.role === 'admin') && (
                 <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
                   <p className="text-sm text-blue-700 dark:text-blue-300">
@@ -425,7 +415,6 @@ const Register = () => {
                 </div>
               )}
 
-              {/* Password Fields */}
               <div>
                 <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Password
@@ -491,7 +480,6 @@ const Register = () => {
             </form>
           )}
 
-          {/* Login Link */}
           <div className="mt-6">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">

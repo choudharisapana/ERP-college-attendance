@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import axios from "axios";
+import api from "../services/api";
 
 const SettingsContext = createContext();
 
@@ -15,42 +15,41 @@ export const SettingsProvider = ({ children }) => {
   const [settings, setSettings] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-const token = localStorage.getItem("auth_token");
+  const token = localStorage.getItem("auth_token");
 
   const applyTheme = (theme) => {
     const root = document.documentElement;
     const body = document.body;
-    
-    // Remove dark class first
+
     root.classList.remove("dark");
-    
+
     if (theme === "dark") {
       root.classList.add("dark");
       localStorage.setItem("theme", "dark");
-      
-      // FORCE background on html and body
+
       root.style.backgroundColor = "#111827";
       body.style.backgroundColor = "#111827";
       body.style.color = "#f3f4f6";
-      
-      // Force all backgrounds
-      const allElements = document.querySelectorAll('div, section, main, article');
-      allElements.forEach(el => {
+
+      const allElements = document.querySelectorAll(
+        "div, section, main, article",
+      );
+      allElements.forEach((el) => {
         const bgColor = window.getComputedStyle(el).backgroundColor;
-        if (bgColor === 'rgb(249, 250, 251)' || bgColor === 'rgb(255, 255, 255)') {
-          el.style.backgroundColor = '';
+        if (
+          bgColor === "rgb(249, 250, 251)" ||
+          bgColor === "rgb(255, 255, 255)"
+        ) {
+          el.style.backgroundColor = "";
         }
       });
-    } 
-    else if (theme === "light") {
+    } else if (theme === "light") {
       localStorage.setItem("theme", "light");
-      
-      // FORCE background on html and body
+
       root.style.backgroundColor = "#f9fafb";
       body.style.backgroundColor = "#f9fafb";
       body.style.color = "#111827";
-    } 
-    else if (theme === "auto") {
+    } else if (theme === "auto") {
       localStorage.setItem("theme", "auto");
       const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
       if (isDark) {
@@ -64,10 +63,11 @@ const token = localStorage.getItem("auth_token");
         body.style.color = "#111827";
       }
     }
-    
-    console.log("Theme applied:", theme);
-    console.log("HTML bg:", root.style.backgroundColor);
-    console.log("Body bg:", body.style.backgroundColor);
+    if (import.meta.env.DEV) {
+      console.log("Theme applied:", theme);
+      console.log("HTML bg:", root.style.backgroundColor);
+      console.log("Body bg:", body.style.backgroundColor);
+    }
   };
 
   const applyFontSize = (fontSize) => {
@@ -75,7 +75,7 @@ const token = localStorage.getItem("auth_token");
     const fontSizeMap = {
       small: "14px",
       medium: "16px",
-      large: "18px"
+      large: "18px",
     };
     root.style.fontSize = fontSizeMap[fontSize] || "16px";
     localStorage.setItem("fontSize", fontSize);
@@ -93,19 +93,21 @@ const token = localStorage.getItem("auth_token");
 
   const applyLanguage = (language) => {
     localStorage.setItem("language", language);
-    console.log("Language applied:", language);
+    if (import.meta.env.DEV) {
+      console.log("Language applied:", language);
+    }
   };
 
   const loadSettings = async () => {
     try {
-     const token = localStorage.getItem("auth_token");
+      const token = localStorage.getItem("auth_token");
       if (!token) {
         const defaultSettings = {
           theme: localStorage.getItem("theme") || "light",
           language: localStorage.getItem("language") || "en",
           fontSize: localStorage.getItem("fontSize") || "medium",
           emailNotifications: true,
-          compactView: localStorage.getItem("compactView") === "true"
+          compactView: localStorage.getItem("compactView") === "true",
         };
         setSettings(defaultSettings);
         applyTheme(defaultSettings.theme);
@@ -115,11 +117,11 @@ const token = localStorage.getItem("auth_token");
         setLoading(false);
         return;
       }
-      
-      const response = await axios.get("http://localhost:5000/api/settings", {
-        headers: { Authorization: `Bearer ${token}` }
+
+      const response = await api.get("/settings", {
+        headers: { Authorization: `Bearer ${token}` },
       });
-      
+
       if (response.data.success) {
         const settingsData = response.data.data;
         setSettings(settingsData);
@@ -135,12 +137,12 @@ const token = localStorage.getItem("auth_token");
       const localFontSize = localStorage.getItem("fontSize") || "medium";
       const localCompactView = localStorage.getItem("compactView") === "true";
       const localLanguage = localStorage.getItem("language") || "en";
-      
+
       applyTheme(localTheme);
       applyFontSize(localFontSize);
       applyCompactView(localCompactView);
       applyLanguage(localLanguage);
-      
+
       setError(err.response?.data?.message || "Failed to load settings");
     } finally {
       setLoading(false);
@@ -150,36 +152,37 @@ const token = localStorage.getItem("auth_token");
   const updateSettings = async (newSettings) => {
     try {
       const token = localStorage.getItem("auth_token");
-      // Save to localStorage first
       localStorage.setItem("theme", newSettings.theme);
       localStorage.setItem("fontSize", newSettings.fontSize);
       localStorage.setItem("compactView", newSettings.compactView);
       localStorage.setItem("language", newSettings.language);
-      localStorage.setItem("emailNotifications", newSettings.emailNotifications);
-      
-      // Apply immediately
+      localStorage.setItem(
+        "emailNotifications",
+        newSettings.emailNotifications,
+      );
+
       applyTheme(newSettings.theme);
       applyFontSize(newSettings.fontSize);
       applyCompactView(newSettings.compactView);
       applyLanguage(newSettings.language);
-      
+
       if (!token) {
         setSettings(newSettings);
         return { success: true, message: "Settings saved locally!" };
       }
-      
+
       const payload = {
         theme: newSettings.theme,
         language: newSettings.language,
         fontSize: newSettings.fontSize,
         emailNotifications: newSettings.emailNotifications,
-        compactView: newSettings.compactView
+        compactView: newSettings.compactView,
       };
-      
-      const response = await axios.put("http://localhost:5000/api/settings", payload, {
-        headers: { Authorization: `Bearer ${token}` }
+
+      const response = await api.put("/settings", payload, {
+        headers: { Authorization: `Bearer ${token}` },
       });
-      
+
       if (response.data.success) {
         setSettings(response.data.data);
         return { success: true, message: "Settings updated successfully!" };
@@ -190,7 +193,10 @@ const token = localStorage.getItem("auth_token");
     } catch (err) {
       console.error("Error updating settings:", err);
       setSettings(newSettings);
-      return { success: true, message: "Settings saved locally (server sync failed)" };
+      return {
+        success: true,
+        message: "Settings saved locally (server sync failed)",
+      };
     }
   };
 
@@ -200,29 +206,33 @@ const token = localStorage.getItem("auth_token");
       language: "en",
       fontSize: "medium",
       emailNotifications: true,
-      compactView: false
+      compactView: false,
     };
-    
+
     localStorage.setItem("theme", "light");
     localStorage.setItem("fontSize", "medium");
     localStorage.setItem("compactView", "false");
     localStorage.setItem("language", "en");
     localStorage.setItem("emailNotifications", "true");
-    
+
     applyTheme("light");
     applyFontSize("medium");
     applyCompactView(false);
     applyLanguage("en");
-    
+
     setSettings(defaultSettings);
-    
+
     try {
-      const token = getToken();
+      const token = localStorage.getItem("auth_token");
       if (token) {
-        const response = await axios.post("http://localhost:5000/api/settings/reset", {}, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        
+        const response = await api.post(
+          "/settings/reset",
+          {},
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          },
+        );
+
         if (response.data.success) {
           setSettings(response.data.data);
           return { success: true, message: "Settings reset to default!" };
@@ -259,7 +269,7 @@ const token = localStorage.getItem("auth_token");
         }
       }
     };
-    
+
     mediaQuery.addEventListener("change", handleChange);
     return () => mediaQuery.removeEventListener("change", handleChange);
   }, []);
@@ -270,7 +280,7 @@ const token = localStorage.getItem("auth_token");
     error,
     updateSettings,
     resetSettings,
-    reloadSettings: loadSettings
+    reloadSettings: loadSettings,
   };
 
   return (

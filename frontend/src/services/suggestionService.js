@@ -1,62 +1,46 @@
-import axios from "axios";
+import api from "./api";
 
-const API_URL = "http://localhost:5000/api/suggestions";
-
-// Submit a new suggestion
 const submitSuggestion = async (suggestionData) => {
   try {
-    const token = localStorage.getItem("auth_token");
-    const config = token
-      ? { headers: { Authorization: `Bearer ${token}` } }
-      : {};
-
-    const response = await axios.post(API_URL, suggestionData, config);
+    const response = await api.post("/suggestions", suggestionData);
     return response.data;
   } catch (error) {
     throw error.response?.data || error.message;
   }
 };
-
-// Get all suggestions with filters
 const getSuggestions = async (filters = {}) => {
   try {
-    const queryParams = new URLSearchParams(filters).toString();
-    const response = await axios.get(`${API_URL}?${queryParams}`);
+    const response = await api.get("/suggestions", {
+      params: filters,
+    });
+
     return response.data;
   } catch (error) {
     throw error.response?.data || error.message;
   }
 };
 
-// Get single suggestion
 const getSuggestion = async (id) => {
   try {
-    const response = await axios.get(`${API_URL}/${id}`);
+    const response = await api.get(`/suggestions/${id}`);
     return response.data;
   } catch (error) {
     throw error.response?.data || error.message;
   }
 };
 
-// Upvote a suggestion
 const upvoteSuggestion = async (id) => {
   try {
-    const token = localStorage.getItem("auth_token");
-    const response = await axios.post(
-      `${API_URL}/${id}/upvote`,
-      {},
-      { headers: { Authorization: `Bearer ${token}` } },
-    );
+    const response = await api.post(`/suggestions/${id}/upvote`);
     return response.data;
   } catch (error) {
     throw error.response?.data || error.message;
   }
 };
 
-// Get suggestion statistics
 const getSuggestionStats = async () => {
   try {
-    const response = await axios.get(`${API_URL}/stats/overview`);
+    const response = await api.get("/suggestions/stats/overview");
     return response.data;
   } catch (error) {
     throw error.response?.data || error.message;

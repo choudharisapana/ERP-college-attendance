@@ -1,4 +1,3 @@
-// frontend/src/components/pages/Subject.jsx
 import React, { useState, useEffect } from "react";
 import { subjectAPI } from "../../services/api";
 import { useAuth } from "../../context/AuthContext";
@@ -11,7 +10,8 @@ const Subject = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedDepartment, setSelectedDepartment] = useState("All Departments");
+  const [selectedDepartment, setSelectedDepartment] =
+    useState("All Departments");
   const [selectedType, setSelectedType] = useState("All Types");
   const [selectedSemester, setSelectedSemester] = useState("All Semesters");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -33,45 +33,56 @@ const Subject = () => {
     description: "",
   });
 
-  // Departments and types for dropdowns
   const departments = [
-    'Computer Science Engineering', 'Information Technology', 'Computer Technology', 
-    'Industrial-IOT', 'Artificial Intelligence', 'Civil Engineering', 'Electrical Engineering', 
-    'Mechanical Engineering', 'Robotics'
+    "Computer Science Engineering",
+    "Information Technology",
+    "Computer Technology",
+    "Industrial-IOT",
+    "Artificial Intelligence",
+    "Civil Engineering",
+    "Electrical Engineering",
+    "Mechanical Engineering",
+    "Robotics",
   ];
-  
-  const types = ["Core", "Elective", "Lab", "MDM", "PEC","Project", "Workshop", "Seminar"];
-  const semesters = ["Semester 1", "Semester 2", "Semester 3", "Semester 4", 
-                     "Semester 5", "Semester 6", "Semester 7", "Semester 8"];
+
+  const types = [
+    "Core",
+    "Elective",
+    "Lab",
+    "MDM",
+    "PEC",
+    "Project",
+    "Workshop",
+    "Seminar",
+  ];
+  const semesters = [
+    "Semester 1",
+    "Semester 2",
+    "Semester 3",
+    "Semester 4",
+    "Semester 5",
+    "Semester 6",
+    "Semester 7",
+    "Semester 8",
+  ];
 
   useEffect(() => {
-    // ✅ Faculty can view, Admin can view
+
     if (!isAdmin && !isFaculty) {
-      navigate('/dashboard');
+      navigate("/dashboard");
       return;
     }
     fetchSubjects();
   }, [isAdmin, isFaculty]);
 
-  // Fetch subjects from API
   const fetchSubjects = async () => {
     try {
       setLoading(true);
       setError(null);
-      
-      // ✅ Faculty - Only their subjects, Admin - All subjects
-      let response;
-      if (isFaculty && !isAdmin) {
-        // Faculty ke sirf apne subjects
-        response = await subjectAPI.getMySubjects?.() || await subjectAPI.getAll();
-        console.log("📚 Faculty fetching my subjects");
-      } else {
-        // Admin - All subjects
-        response = await subjectAPI.getAll();
-        console.log("📚 Admin fetching all subjects");
-      }
-      
-      // Handle different response structures
+
+      const response = await subjectAPI.getAll();
+      console.log(`${user?.role} fetching all subjects`);
+
       let subjectsData = [];
       if (response.data) {
         if (Array.isArray(response.data.data)) {
@@ -80,11 +91,11 @@ const Subject = () => {
           subjectsData = response.data;
         }
       }
-      
+
       setSubjects(subjectsData);
     } catch (err) {
-      const errorMessage = 
-        err.response?.data?.message || 
+      const errorMessage =
+        err.response?.data?.message ||
         "Failed to fetch subjects. Please try again.";
       setError(errorMessage);
       console.error("Error fetching subjects:", err);
@@ -93,10 +104,9 @@ const Subject = () => {
     }
   };
 
-  // Filter subjects
   const filteredSubjects = subjects.filter((subject) => {
     if (!subject || typeof subject !== "object") return false;
-    
+
     const name = subject.name || "";
     const code = subject.code || "";
     const subjectDepartment = subject.department || "";
@@ -112,17 +122,15 @@ const Subject = () => {
       subjectDepartment === selectedDepartment;
 
     const matchesType =
-      selectedType === "All Types" || 
-      subjectType === selectedType;
+      selectedType === "All Types" || subjectType === selectedType;
 
     const matchesSemester =
-      selectedSemester === "All Semesters" || 
+      selectedSemester === "All Semesters" ||
       subjectSemester === selectedSemester;
 
     return matchesSearch && matchesDepartment && matchesType && matchesSemester;
   });
 
-  // Clear filters function
   const clearFilters = () => {
     setSearchTerm("");
     setSelectedDepartment("All Departments");
@@ -130,7 +138,6 @@ const Subject = () => {
     setSelectedSemester("All Semesters");
   };
 
-  // Delete subject function - Only Admin
   const handleDeleteSubject = async (id) => {
     if (!isAdmin) {
       alert("You don't have permission to delete subjects");
@@ -159,7 +166,6 @@ const Subject = () => {
     }
   };
 
-  // Open Edit Modal - Only Admin
   const openEditModal = (subject) => {
     if (!isAdmin) {
       alert("You don't have permission to edit subjects");
@@ -185,7 +191,6 @@ const Subject = () => {
     setApiError(null);
   };
 
-  // Close Modals
   const closeModals = () => {
     setIsAddModalOpen(false);
     setIsEditModalOpen(false);
@@ -193,7 +198,6 @@ const Subject = () => {
     setApiError(null);
   };
 
-  // Handle input changes for Add Modal
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNewSubject((prev) => ({
@@ -202,14 +206,12 @@ const Subject = () => {
     }));
   };
 
-  // Add Subject Functionality - Only Admin
   const handleAddSubject = async () => {
     if (!isAdmin) {
       alert("You don't have permission to add subjects");
       return;
     }
 
-    // Validate required fields
     if (!newSubject.name.trim()) {
       alert("Please enter subject name");
       return;
@@ -227,7 +229,6 @@ const Subject = () => {
     setApiError(null);
 
     try {
-      // Prepare data for API
       const subjectData = {
         name: newSubject.name.trim(),
         code: newSubject.code.trim(),
@@ -273,7 +274,6 @@ const Subject = () => {
     }
   };
 
-  // Edit Subject Functionality - Only Admin
   const handleEditSubject = async () => {
     if (!isAdmin) {
       alert("You don't have permission to edit subjects");
@@ -282,7 +282,6 @@ const Subject = () => {
 
     if (!editingSubject) return;
 
-    // Validate required fields
     if (!newSubject.name.trim()) {
       alert("Please enter subject name");
       return;
@@ -300,7 +299,6 @@ const Subject = () => {
     setApiError(null);
 
     try {
-      // Prepare data for API
       const subjectData = {
         name: newSubject.name.trim(),
         code: newSubject.code.trim(),
@@ -338,7 +336,6 @@ const Subject = () => {
     }
   };
 
-  // Loading state
   if (loading && subjects.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50 pt-24 flex items-center justify-center">
@@ -352,19 +349,18 @@ const Subject = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Main Content with extra top padding to avoid navbar overlap */}
       <div className="max-w-7xl mx-auto">
-        {/* Header Section */}
         <div className="pt-24 text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-600 mb-2">
             Subject Management
           </h1>
           <p className="text-lg text-gray-600">
-            {isAdmin ? "Manage course subjects and curriculum information" : "View course subjects"}
+            {isAdmin
+              ? "Manage course subjects and curriculum information"
+              : "View course subjects"}
           </p>
         </div>
 
-        {/* Error Display */}
         {apiError && (
           <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-md">
             <div className="flex justify-between items-center">
@@ -379,7 +375,6 @@ const Subject = () => {
           </div>
         )}
 
-        {/* Search and Filters Section */}
         <div className="bg-white rounded-lg shadow-md p-4 md:p-6 mb-6">
           <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
             <div className="md:col-span-2">
@@ -457,7 +452,7 @@ const Subject = () => {
             >
               Clear Filters
             </button>
-            {/* ✅ Add Button - Only Admin */}
+
             {isAdmin && (
               <button
                 onClick={() => setIsAddModalOpen(true)}
@@ -471,11 +466,12 @@ const Subject = () => {
           </div>
         </div>
 
-        {/* Error State */}
         {error && subjects.length === 0 && (
           <div className="text-center py-12">
             <i className="fas fa-exclamation-triangle text-6xl text-red-500 mb-4"></i>
-            <h3 className="text-xl font-semibold text-gray-600 mb-2">{error}</h3>
+            <h3 className="text-xl font-semibold text-gray-600 mb-2">
+              {error}
+            </h3>
             <button
               onClick={fetchSubjects}
               className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
@@ -485,7 +481,6 @@ const Subject = () => {
           </div>
         )}
 
-        {/* Subject Grid */}
         {!error && (
           <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
             {filteredSubjects.map((subject) => (
@@ -526,7 +521,8 @@ const Subject = () => {
                     <div className="flex items-center">
                       <i className="fas fa-building text-gray-400 w-5"></i>
                       <span className="ml-2 text-gray-600">
-                        <strong>Department:</strong> {subject.department || "No Department"}
+                        <strong>Department:</strong>{" "}
+                        {subject.department || "No Department"}
                       </span>
                     </div>
 
@@ -534,7 +530,9 @@ const Subject = () => {
                       <div className="flex items-start">
                         <i className="fas fa-file-alt text-gray-400 w-5 mt-1"></i>
                         <div className="ml-2">
-                          <strong className="text-gray-600">Description:</strong>
+                          <strong className="text-gray-600">
+                            Description:
+                          </strong>
                           <p className="text-gray-600 text-sm mt-1">
                             {subject.description}
                           </p>
@@ -544,30 +542,26 @@ const Subject = () => {
                   </div>
 
                   <div className="flex justify-between items-center mt-6 pt-4 border-t border-gray-200">
-                    {/* ✅ Edit - Only Admin */}
                     {isAdmin && (
                       <button
                         onClick={() => openEditModal(subject)}
-                        className="px-4 py-2 bg-blue-500 text-white-50 rounded-md hover:bg-blue-600"
+                        className="px-3 py-1 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200"
+                        title="Edit"
                       >
-                        <i className="fas fa-edit mr-2"></i>
-                        Edit
+                        <i className="fas fa-edit"></i>
                       </button>
                     )}
-                    {/* ✅ Delete - Only Admin */}
                     {isAdmin && (
                       <button
                         onClick={() => handleDeleteSubject(subject._id)}
-                        className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600"
+                        className="px-3 py-1 bg-red-100 text-red-700 rounded-md hover:bg-red-200"
+                        title="Delete"
                       >
-                        <i className="fas fa-trash mr-2"></i>
-                        Delete
+                        <i className="fas fa-trash "></i>
                       </button>
                     )}
-                    {/* ✅ Faculty - View Only Label */}
                     {isFaculty && !isAdmin && (
-                      <div className="w-full text-center text-sm text-gray-500">
-                      </div>
+                      <div className="w-full text-center text-sm text-gray-500"></div>
                     )}
                   </div>
                 </div>
@@ -576,7 +570,6 @@ const Subject = () => {
           </div>
         )}
 
-        {/* Empty State */}
         {!error && filteredSubjects.length === 0 && subjects.length > 0 && (
           <div className="text-center py-12">
             <i className="fas fa-book text-6xl text-gray-300 mb-4"></i>
@@ -589,7 +582,6 @@ const Subject = () => {
           </div>
         )}
 
-        {/* No Subjects State */}
         {!error && subjects.length === 0 && (
           <div className="text-center py-12">
             <i className="fas fa-book text-6xl text-gray-300 mb-4"></i>
@@ -597,13 +589,14 @@ const Subject = () => {
               No subjects yet
             </h3>
             <p className="text-gray-500">
-              {isAdmin ? "Add your first subject using the blue button" : "No subjects available"}
+              {isAdmin
+                ? "Add your first subject using the blue button"
+                : "No subjects available"}
             </p>
           </div>
         )}
       </div>
 
-      {/* ✅ Add New Subject Modal - Only Admin */}
       {isAddModalOpen && isAdmin && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
@@ -750,7 +743,6 @@ const Subject = () => {
         </div>
       )}
 
-      {/* ✅ Edit Subject Modal - Only Admin */}
       {isEditModalOpen && editingSubject && isAdmin && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full">

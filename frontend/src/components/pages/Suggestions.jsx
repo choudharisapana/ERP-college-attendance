@@ -19,20 +19,19 @@ const Suggestions = ({ onClose }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const [allSuggestions, setAllSuggestions] = useState([]); // Store all suggestions
+  const [allSuggestions, setAllSuggestions] = useState([]); 
 
-  const API_URL = "http://localhost:5000/api";
-  const SUGGESTIONS_PER_PAGE = 20; // Increased from 10 to 20
+const API_URL =
+  import.meta.env.VITE_API_URL || "http://localhost:5000/api";  
+  const SUGGESTIONS_PER_PAGE = 20; 
 
-  // Fetch all suggestions without pagination limit
   useEffect(() => {
     const fetchAllSuggestions = async () => {
       try {
         setLoading(true);
 
-        // Fetch ALL suggestions by using a high limit
         const response = await axios.get(
-          `${API_URL}/suggestions?sort=latest&limit=1000`, // Fetch up to 1000 suggestions
+          `${API_URL}/suggestions?sort=latest&limit=1000`, 
         );
 
         if (response.data.success) {
@@ -40,7 +39,6 @@ const Suggestions = ({ onClose }) => {
           setSuggestions(response.data.suggestions || []);
           setTotalSuggestions(response.data.stats?.total || 0);
 
-          // Calculate pagination
           const total = response.data.suggestions.length;
           setTotalPages(Math.ceil(total / SUGGESTIONS_PER_PAGE));
           setHasMore(total > SUGGESTIONS_PER_PAGE);
@@ -58,7 +56,6 @@ const Suggestions = ({ onClose }) => {
     fetchAllSuggestions();
   }, []);
 
-  // Handle category filter with client-side pagination
   useEffect(() => {
     if (selectedCategory === "All") {
       setSuggestions(allSuggestions);
@@ -68,17 +65,15 @@ const Suggestions = ({ onClose }) => {
       );
       setSuggestions(filtered);
     }
-    setCurrentPage(1); // Reset to first page when category changes
+    setCurrentPage(1); 
   }, [selectedCategory, allSuggestions]);
 
-  // Get current page suggestions
   const getCurrentPageSuggestions = () => {
     const startIndex = (currentPage - 1) * SUGGESTIONS_PER_PAGE;
     const endIndex = startIndex + SUGGESTIONS_PER_PAGE;
     return suggestions.slice(startIndex, endIndex);
   };
 
-  // Handle pagination
   const handleNextPage = () => {
     if (currentPage < totalPages) {
       setCurrentPage(currentPage + 1);
@@ -94,13 +89,11 @@ const Suggestions = ({ onClose }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Basic validation
     if (!formData.name || !formData.email || !formData.suggestion) {
       alert("Please fill in all required fields.");
       return;
     }
 
-    // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
       alert("Please enter a valid email address.");
@@ -110,15 +103,13 @@ const Suggestions = ({ onClose }) => {
     setIsSubmitting(true);
 
     try {
-      // Real API call with occupation included
      const response = await axios.post(`${API_URL}/suggestions`, formData);
 
       if (response.data.success) {
         setSubmitted(true);
 
-        // Refresh all suggestions after successful submission
         const refreshResponse = await axios.get(
-          `${API_URL}/suggestions?sort=latest&limit=1000`, // Fetch all again
+          `${API_URL}/suggestions?sort=latest&limit=1000`,
         );
         if (refreshResponse.data.success) {
           setAllSuggestions(refreshResponse.data.suggestions || []);
@@ -139,7 +130,6 @@ const Suggestions = ({ onClose }) => {
       setIsSubmitting(false);
     }
 
-    // Reset form after success
     setTimeout(() => {
       setFormData({
         name: "",
@@ -187,7 +177,6 @@ const Suggestions = ({ onClose }) => {
     { value: "Other", label: "Other" },
   ];
 
-  // Get unique categories for filter
   const filterCategories = [
     "All",
     ...new Set(allSuggestions.map((s) => s.category)),
@@ -215,7 +204,7 @@ const Suggestions = ({ onClose }) => {
             </svg>
           </div>
 
-          <h3 className="text-xl font-semibold text-gray-800 mb-3">
+          <h3 className="text-xl font-semibold text-gray-600 mb-3">
             Suggestion Submitted!
           </h3>
 
@@ -232,7 +221,7 @@ const Suggestions = ({ onClose }) => {
             </button>
             <button
               onClick={onClose}
-              className="px-6 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              className="px-6 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50/2 transition-colors"
             >
               Close
             </button>
@@ -244,7 +233,6 @@ const Suggestions = ({ onClose }) => {
 
   return (
     <div className="max-w-5xl mx-auto px-2 py-14">
-      {/* Header Section - Center aligned */}
       <div className="text-center mb-6">
         <h1 className="text-5xl font-bold text-gray-900 mb-3">
           Suggestions & Feedback
@@ -254,7 +242,6 @@ const Suggestions = ({ onClose }) => {
         </p>
       </div>
 
-      {/* Total suggestions in corner */}
       <div className="flex justify-end mb-4">
         <div className="bg-gray-50 px-4 py-2 rounded-full">
           <span className="text-sm font-medium text-gray-600">
@@ -267,9 +254,7 @@ const Suggestions = ({ onClose }) => {
       </div>
 
       <div className="grid lg:grid-cols-2 gap-8">
-        {/* Left Column - Form */}
         <div>
-          {/* Info card */}
           <div className="bg-blue-50 rounded-xl p-5 mb-6">
             <div className="flex items-start gap-3">
               <i className="fas fa-lightbulb text-yellow-500 text-2xl"></i>
@@ -284,7 +269,6 @@ const Suggestions = ({ onClose }) => {
             </div>
           </div>
 
-          {/* Form */}
           <div className="bg-white rounded-xl border border-gray-200 p-6">
             <form onSubmit={handleSubmit} className="space-y-5">
               <div className="grid md:grid-cols-2 gap-4">
@@ -333,8 +317,10 @@ const Suggestions = ({ onClose }) => {
                     {occupations.map((occ) => (
                       <option key={occ.value} value={occ.value}>
                         {occ.icon} {occ.label}
+
                       </option>
                     ))}
+                  
                   </select>
                 </div>
 
@@ -424,9 +410,7 @@ const Suggestions = ({ onClose }) => {
           </div>
         </div>
 
-        {/* Right Column - Suggestions List */}
         <div>
-          {/* Category Filter */}
           <div className="flex items-center justify-between mb-4">
             <span className="text-lg font-medium text-gray-900">
               Latest Suggestions
@@ -462,7 +446,6 @@ const Suggestions = ({ onClose }) => {
                     className="bg-white rounded-xl border border-gray-200 p-4 hover:shadow-sm transition-shadow"
                   >
                     <div className="flex items-start gap-3">
-                      {/* Category Icon */}
                       <div
                         className={`w-8 h-8 rounded-lg flex items-center justify-center text-lg ${
                           item.category === "Feature Request"
@@ -494,7 +477,6 @@ const Suggestions = ({ onClose }) => {
                       </div>
 
                       <div className="flex-1">
-                        {/* Date, Category and Occupation */}
                         <div className="flex items-center gap-2 mb-1 flex-wrap">
                           <span className="text-xs text-gray-400">
                             {new Date(item.createdAt).toLocaleDateString(
@@ -523,12 +505,10 @@ const Suggestions = ({ onClose }) => {
                           </span>
                         </div>
 
-                        {/* Suggestion Text */}
                         <p className="text-sm text-gray-600 mt-2">
                           {item.suggestion}
                         </p>
 
-                        {/* By whom */}
                         <div className="mt-2 text-xs text-gray-400">
                           By: {item.isAnonymous ? "Anonymous" : item.name}
                         </div>
@@ -538,7 +518,6 @@ const Suggestions = ({ onClose }) => {
                 ))}
               </div>
 
-              {/* Pagination Controls */}
               {totalPages > 1 && (
                 <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200">
                   <button
@@ -571,7 +550,6 @@ const Suggestions = ({ onClose }) => {
             </>
           )}
 
-          {/* Yellow Tips Section */}
           <div className="mt-6 bg-yellow-50 rounded-xl border border-yellow-200 p-5">
             <div className="flex items-center gap-2 mb-3">
              <i className="fas fa-lightbulb text-yellow-500 text-2xl"></i>

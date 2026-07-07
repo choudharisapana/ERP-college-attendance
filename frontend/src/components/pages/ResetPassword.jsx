@@ -1,8 +1,8 @@
-// frontend/src/components/pages/ResetPassword.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
+import api from "../../services/api";
 
 const ResetPassword = () => {
   const [searchParams] = useSearchParams();
@@ -42,10 +42,10 @@ const ResetPassword = () => {
     }
 
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/reset-password', {
-        token,
-        newPassword
-      });
+     const response = await api.post("/auth/reset-password", {
+     token,
+     newPassword,
+    });
       setMessage(response.data.message || 'Password reset successfully!');
       setTimeout(() => {
         navigate('/login');

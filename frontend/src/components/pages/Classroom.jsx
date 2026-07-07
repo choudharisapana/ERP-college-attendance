@@ -1,4 +1,3 @@
-// frontend/src/components/pages/Classroom.jsx
 import React, { useState, useEffect } from "react";
 import { classroomAPI } from "../../services/api";
 import { useAuth } from "../../context/AuthContext";
@@ -72,7 +71,6 @@ const Classroom = () => {
   const availabilityOptions = ["Available", "In Use", "Under Maintenance"];
 
   useEffect(() => {
-    // ✅ Faculty can view, Admin can view
     if (!isAdmin && !isFaculty) {
       navigate('/dashboard');
       return;
@@ -80,7 +78,6 @@ const Classroom = () => {
     fetchClassrooms();
   }, [isAdmin, isFaculty]);
 
-  // Fetch classrooms from API
   const fetchClassrooms = async () => {
     try {
       setLoading(true);
@@ -108,7 +105,6 @@ const Classroom = () => {
     }
   };
 
-  // Filter classrooms based on search, type, building and department
   const filteredClassrooms = classrooms.filter((classroom) => {
     if (!classroom || typeof classroom !== "object") return false;
 
@@ -132,7 +128,6 @@ const Classroom = () => {
     return matchesSearch && matchesType && matchesBuilding && matchesDepartment;
   });
 
-  // Clear filters function
   const clearFilters = () => {
     setSearchTerm("");
     setFilterType("All");
@@ -140,7 +135,6 @@ const Classroom = () => {
     setFilterDepartment("All");
   };
 
-  // Add Classroom Functionality - Only Admin
   const handleAddClassroom = async () => {
     if (!isAdmin) {
       alert("You don't have permission to add classrooms");
@@ -219,7 +213,6 @@ const Classroom = () => {
     }
   };
 
-  // Edit Classroom Functionality - Only Admin
   const handleEditClassroom = async () => {
     if (!isAdmin) {
       alert("You don't have permission to edit classrooms");
@@ -291,7 +284,6 @@ const Classroom = () => {
     }
   };
 
-  // Delete Classroom Functionality - Only Admin
   const handleDeleteClassroom = async (id) => {
     if (!isAdmin) {
       alert("You don't have permission to delete classrooms");
@@ -321,7 +313,6 @@ const Classroom = () => {
     }
   };
 
-  // Open Edit Modal - Only Admin
   const openEditModal = (classroom) => {
     if (!isAdmin) {
       alert("You don't have permission to edit classrooms");
@@ -346,7 +337,6 @@ const Classroom = () => {
     setIsEditModalOpen(true);
   };
 
-  // Close Modals
   const closeModals = () => {
     setIsAddModalOpen(false);
     setIsEditModalOpen(false);
@@ -370,7 +360,6 @@ const Classroom = () => {
     }));
   };
 
-  // Toggle equipment selection
   const toggleEquipment = (equipment) => {
     setNewClassroom((prev) => ({
       ...prev,
@@ -380,7 +369,6 @@ const Classroom = () => {
     }));
   };
 
-  // Get availability color class
   const getAvailabilityColor = (availability) => {
     switch (availability) {
       case "Available":
@@ -513,7 +501,6 @@ const Classroom = () => {
             >
               Clear Filters
             </button>
-            {/* ✅ Add Button - Only Admin */}
             {isAdmin && (
               <button
                 onClick={() => setIsAddModalOpen(true)}
@@ -603,13 +590,13 @@ const Classroom = () => {
                               classroom.equipment.map((item, index) => (
                                 <span
                                   key={index}
-                                  className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded"
+                                  className="px-1 py-1  text-gray-500 text-20 rounded"
                                 >
                                   {item}
                                 </span>
                               ))
                             ) : (
-                              <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">
+                              <span className="px-2 py-1  text-gray-500 text-20 rounded">
                                 {classroom.equipment}
                               </span>
                             )}
@@ -620,28 +607,29 @@ const Classroom = () => {
                   </div>
 
                   <div className="flex justify-between items-center mt-6 pt-4 border-t border-gray-200">
-                    {/* ✅ Edit/Delete - Only Admin */}
+                    {/*Edit/Delete*/}
                     {isAdmin && (
                       <>
                         <button
                           onClick={() => openEditModal(classroom)}
-                          className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50"
+                          className="px-3 py-1 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 disabled:opacity-50"
+                          title="Edit"
                           disabled={isSubmitting}
                         >
-                          <i className="fas fa-edit mr-2"></i>
-                          Edit
+                          <i className="fas fa-edit"></i>
+                         
                         </button>
                         <button
                           onClick={() => handleDeleteClassroom(classroom._id)}
-                          className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 disabled:opacity-50"
+                          className="px-3 py-1 bg-red-100 text-red-700 rounded-md hover:bg-red-200 disabled:opacity-50"
+                          title="Delete"
                           disabled={isSubmitting}
                         >
-                          <i className="fas fa-trash mr-2"></i>
-                          Delete
+                          <i className="fas fa-trash"></i>
+                   
                         </button>
                       </>
                     )}
-                    {/* ✅ Faculty - View Only */}
                     {isFaculty && (
                       <div className="w-full text-center text-sm text-gray-500">
                       </div>
@@ -678,7 +666,6 @@ const Classroom = () => {
         )}
       </div>
 
-      {/* ✅ Add Classroom Modal - Only Admin */}
       {isAddModalOpen && isAdmin && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
@@ -855,7 +842,6 @@ const Classroom = () => {
         </div>
       )}
 
-      {/* ✅ Edit Classroom Modal - Only Admin */}
       {isEditModalOpen && editingClassroom && isAdmin && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">

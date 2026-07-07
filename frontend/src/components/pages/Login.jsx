@@ -1,4 +1,3 @@
-// frontend/src/components/pages/Login.jsx
 import React, { useState } from 'react';
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate, Link } from 'react-router-dom';
@@ -45,7 +44,6 @@ const Login = () => {
     setShowVerificationAlert(false);
 
     try {
-      // ✅ Clear any invalid token before login
       const existingToken = localStorage.getItem("auth_token");
       if (existingToken === "null" || existingToken === "undefined") {
         localStorage.removeItem("auth_token");

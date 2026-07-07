@@ -3,7 +3,7 @@ import axios from 'axios';
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
 const dashboardAPI = {
-  // Get dashboard data (cached)
+
   getDashboard: async () => {
     try {
       const response = await axios.get(`${API_URL}/dashboard`);
@@ -14,7 +14,6 @@ const dashboardAPI = {
     }
   },
 
-  // Get fresh statistics
   getStats: async () => {
     try {
       const response = await axios.get(`${API_URL}/dashboard/stats`);
@@ -25,7 +24,6 @@ const dashboardAPI = {
     }
   },
 
-  // Refresh dashboard data
   refreshDashboard: async () => {
     try {
       const response = await axios.post(`${API_URL}/dashboard/refresh`);

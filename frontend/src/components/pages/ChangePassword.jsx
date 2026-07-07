@@ -1,4 +1,3 @@
-// frontend/src/pages/ChangePassword.jsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from "../../context/AuthContext";
@@ -22,7 +21,6 @@ const ChangePassword = () => {
       ...formData,
       [e.target.name]: e.target.value,
     });
-    // Clear messages when user types
     setError('');
     setSuccess('');
   };
@@ -32,7 +30,6 @@ const ChangePassword = () => {
     setError('');
     setSuccess('');
 
-    // ✅ Validation
     if (!formData.currentPassword || !formData.newPassword || !formData.confirmPassword) {
       setError('All fields are required');
       return;
@@ -69,7 +66,6 @@ const ChangePassword = () => {
           confirmPassword: '',
         });
 
-        // ✅ Show success message and logout after 2 seconds
         setTimeout(() => {
           alert('Password changed successfully! Please login again.');
           logout();
@@ -86,7 +82,6 @@ const ChangePassword = () => {
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8 pt-24">
       <div className="max-w-2xl mx-auto">
-        {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Change Password</h1>
           <p className="text-gray-600 mt-2">
@@ -94,7 +89,6 @@ const ChangePassword = () => {
           </p>
         </div>
 
-        {/* User Info Card */}
         <div className="bg-white rounded-lg shadow-md p-6 mb-6">
           <div className="flex items-center space-x-4">
             <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center text-white text-2xl font-bold">
@@ -110,10 +104,8 @@ const ChangePassword = () => {
           </div>
         </div>
 
-        {/* Change Password Form */}
         <div className="bg-white rounded-lg shadow-md p-6">
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Error/Success Messages */}
             {error && (
               <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
                 {error}
@@ -125,7 +117,6 @@ const ChangePassword = () => {
               </div>
             )}
 
-            {/* Current Password */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Current Password *
@@ -150,7 +141,6 @@ const ChangePassword = () => {
               </div>
             </div>
 
-            {/* New Password */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 New Password *
@@ -167,7 +157,6 @@ const ChangePassword = () => {
               <p className="text-xs text-gray-500 mt-1">Minimum 6 characters</p>
             </div>
 
-            {/* Confirm Password */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Confirm New Password *
@@ -183,7 +172,6 @@ const ChangePassword = () => {
               />
             </div>
 
-            {/* Submit Button */}
             <button
               type="submit"
               disabled={loading}
@@ -199,7 +187,6 @@ const ChangePassword = () => {
               )}
             </button>
 
-            {/* Forget Password Link */}
             <div className="text-center">
               <p className="text-sm text-gray-600">
                 Forgot password?{' '}

@@ -1,23 +1,33 @@
-import { io } from 'socket.io-client';
+import { io } from "socket.io-client";
 
-const SOCKET_URL = 'http://localhost:5000';
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL;
 
 let socket = null;
 
 export const connectSocket = (userId) => {
   if (!socket) {
-    socket = io(SOCKET_URL);
-    
-    socket.on('connect', () => {
-      console.log('Socket connected');
-      // Join user's personal room
-      socket.emit('join', userId);
+    socket = io(SOCKET_URL, {
+      transports: ["websocket"],
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
     });
-    
-    socket.on('disconnect', () => {
-      console.log('Socket disconnected');
+
+    socket.on("connect", () => {
+      if (import.meta.env.DEV) {
+        console.log("Socket connected");
+      }
+
+      socket.emit("join", userId);
+    });
+
+    socket.on("disconnect", () => {
+      if (import.meta.env.DEV) {
+        console.log("Socket disconnected");
+      }
     });
   }
+
   return socket;
 };
 

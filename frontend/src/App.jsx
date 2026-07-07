@@ -1,4 +1,3 @@
-// frontend/src/App.jsx
 import React, { useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 
@@ -29,13 +28,6 @@ import { SuggestionProvider } from "./context/SuggestionContext";
 import { SettingsProvider, useSettings } from "./context/SettingsContext";
 import ChangePassword from './components/pages/ChangePassword';
 
-// ✅ Faculty Leave - Only if needed
-// import FacultyLeave from "./components/pages/FacultyLeave";
-
-// ✅ Admin Leave Management - Only if needed
-// import AdminLeaveManagement from "./components/pages/AdminLeaveManagement";
-
-// Theme Manager Component
 const ThemeManager = ({ children }) => {
   const { settings, loading } = useSettings();
 
@@ -94,10 +86,8 @@ function AppContent() {
 
       <div className="flex-grow p-4">
         <Routes>
-          {/* 🔹 HOME */}
           <Route path="/" element={<Home />} />
 
-          {/* 🔹 AUTH */}
           <Route
             path="/login"
             element={user ? <Navigate to="/" /> : <Login />}
@@ -107,12 +97,10 @@ function AppContent() {
             element={user ? <Navigate to="/" /> : <Register />}
           />
 
-          {/* 🔹 PASSWORD */}
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password/" element={<ResetPassword />} />
           <Route path="/verify-email" element={<VerifyEmail />} />
 
-          {/* ✅ DASHBOARD - All Roles */}
           <Route
             path="/dashboard"
             element={
@@ -122,7 +110,6 @@ function AppContent() {
             }
           />
 
-          {/* ✅ PROFILE - All Roles */}
           <Route
             path="/profile"
             element={
@@ -132,7 +119,6 @@ function AppContent() {
             }
           />
 
-          {/* ✅ CHANGE PASSWORD - All Roles */}
           <Route
             path="/change-password"
             element={
@@ -142,7 +128,6 @@ function AppContent() {
             }
           />
 
-          {/* ✅ STUDENT BATCHES - All Roles */}
           <Route
             path="/studentBatches"
             element={
@@ -152,7 +137,6 @@ function AppContent() {
             }
           />
 
-          {/* ✅ SUBJECT - Faculty & Admin */}
           <Route
             path="/subject"
             element={
@@ -162,7 +146,6 @@ function AppContent() {
             }
           />
 
-          {/* ✅ CLASSROOMS - Faculty & Admin */}
           <Route
             path="/classrooms"
             element={
@@ -172,7 +155,6 @@ function AppContent() {
             }
           />
 
-          {/* ✅ FACULTY - Faculty & Admin */}
           <Route
             path="/faculty"
             element={
@@ -181,9 +163,6 @@ function AppContent() {
               </ProtectedRoute>
             }
           />
-
-          {/* ✅ CREATE TIMETABLE - Admin Only */}
-        
 
           <Route
             path="/create-timetable"
@@ -194,8 +173,6 @@ function AppContent() {
             }
           />
 
-
-          {/* ✅ SUGGESTIONS - All Roles */}
           <Route
             path="/suggestions"
             element={
@@ -205,7 +182,6 @@ function AppContent() {
             }
           />
 
-          {/* ✅ CONTACT - All Roles */}
           <Route
             path="/contact"
             element={
@@ -215,7 +191,6 @@ function AppContent() {
             }
           />
 
-          {/* ✅ SETTINGS - All Roles */}
           <Route
             path="/settings"
             element={
@@ -225,7 +200,6 @@ function AppContent() {
             }
           />
 
-          {/* 🔹 404 - Redirect to Home */}
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </div>

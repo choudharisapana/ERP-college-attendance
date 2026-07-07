@@ -1,8 +1,7 @@
-// frontend/src/components/pages/Profile.jsx
 import React, { useState, useEffect } from 'react';
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from 'react-router-dom';
-
+const API_URL = import.meta.env.VITE_API_URL;
 const Profile = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -89,7 +88,9 @@ const Profile = () => {
     try {
       const token = localStorage.getItem('auth_token');
       
-      const response = await fetch('http://localhost:5000/api/auth/change-password', {
+      const response = await fetch(
+  `${API_URL}/auth/change-password`,
+  {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -104,7 +105,7 @@ const Profile = () => {
       const data = await response.json();
 
       if (data.success) {
-        setSuccess('✅ Password changed successfully! Please login again.');
+        setSuccess('Password changed successfully! Please login again.');
         setPasswordData({
           currentPassword: '',
           newPassword: '',
@@ -180,7 +181,6 @@ const Profile = () => {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-20">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-        {/* Page Header */}
           <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
             Profile Settings
@@ -190,14 +190,9 @@ const Profile = () => {
           </p>
         </div>
          
-        
-
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-
-          {/* Sidebar */}
           <div className="lg:col-span-1">
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden sticky top-24">
-              {/* Profile Summary */}
               <div className="p-6 text-center border-b border-gray-200 dark:border-gray-700">
                 <div className="w-20 h-20 mx-auto bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mb-3 shadow-lg shadow-blue-500/20">
                   <span className="text-white text-2xl font-bold">
@@ -207,18 +202,17 @@ const Profile = () => {
                 <h3 className="font-semibold text-gray-900 dark:text-white text-base">
                   {user.name || 'User'}
                 </h3>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate">
+                <p className="text-xs text-gray-600 dark:text-gray-500 mt-0.5 truncate">
                   {user.email || 'No email'}
                 </p>
                 <div className="flex items-center justify-center gap-1.5 mt-2">
-                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
-                    <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
+                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full  text-xs font-bold bg-green-700 text-green-400 dark:bg-green-900/20 dark:text-green-600">
+                    <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></span>
                     Active
                   </span>
                 </div>
               </div>
 
-              {/* Navigation */}
               <nav className="p-2 space-y-0.5">
                 <button
                   onClick={() => setActiveTab('profile')}
@@ -228,7 +222,7 @@ const Profile = () => {
                       : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700/50'
                   }`}
                 >
-                  <i className={`fas fa-user w-4 text-center ${activeTab === 'profile' ? 'text-blue-500' : 'text-gray-400'}`}></i>
+                  <i className={`fas fa-user-shield w-4 text-center ${activeTab === 'profile' ? 'text-blue-500' : 'text-gray-400'}`}></i>
                   <span>Profile Information</span>
                 </button>
 
@@ -265,7 +259,6 @@ const Profile = () => {
             </div>
           </div>
 
-          {/* Main Content */}
           <div className="lg:col-span-3">
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
 
@@ -294,8 +287,7 @@ const Profile = () => {
                 <div>
                   <div className="flex items-center gap-3 mb-6 pb-4 border-b border-gray-200 dark:border-gray-700">
                     <div className="w-9 h-9 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
-                      <i className="fas fa-id-card text-blue-600 dark:text-blue-400 text-sm"></i>
-                    </div>
+                  <i className="fas fa-user-shield text-blue-600 dark:text-blue-400 text-sm"></i>  </div>
                     <div>
                       <h3 className="font-semibold text-gray-900 dark:text-white">Personal Information</h3>
                       <p className="text-xs text-gray-500 dark:text-gray-400">Your account details</p>
@@ -303,8 +295,7 @@ const Profile = () => {
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* Name */}
-                    <div className="bg-gray-50 dark:bg-gray-700/30 rounded-lg p-4">
+                    <div className="bg-gray-50 dark:bg-gray-700/30 rounded-lg p-4 border border-gray-300 dark:border-gray-600">
                       <label className="flex items-center gap-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
                         <i className="fas fa-user text-gray-400 text-[10px]"></i>
                         Full Name
@@ -314,8 +305,7 @@ const Profile = () => {
                       </p>
                     </div>
 
-                    {/* Email */}
-                    <div className="bg-gray-50 dark:bg-gray-700/30 rounded-lg p-4">
+                    <div className="bg-gray-50 dark:bg-gray-700/30 rounded-lg p-4 border border-gray-300 dark:border-gray-600">
                       <label className="flex items-center gap-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
                         <i className="fas fa-envelope text-gray-400 text-[10px]"></i>
                         Email Address
@@ -325,9 +315,8 @@ const Profile = () => {
                       </p>
                     </div>
 
-                    {/* Department - Only for Students */}
                     {user.role === 'user' && (
-                      <div className="bg-gray-50 dark:bg-gray-700/30 rounded-lg p-4">
+                      <div className="bg-gray-50 dark:bg-gray-700/30 border border-gray-300 rounded-lg p-4">
                         <label className="flex items-center gap-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
                           <i className="fas fa-building text-gray-400 text-[10px]"></i>
                           Department
@@ -339,9 +328,8 @@ const Profile = () => {
                       </div>
                     )}
 
-                    {/* Semester - Only for Students */}
                     {user.role === 'user' && (
-                      <div className="bg-gray-50 dark:bg-gray-700/30 rounded-lg p-4">
+                      <div className="bg-gray-50 dark:bg-gray-700/30 border border-gray-300 rounded-lg p-4">
                         <label className="flex items-center gap-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
                           <i className="fas fa-graduation-cap text-gray-400 text-[10px]"></i>
                           Semester
@@ -353,8 +341,7 @@ const Profile = () => {
                       </div>
                     )}
 
-                    {/* Role */}
-                    <div className="bg-gray-50 dark:bg-gray-700/30 rounded-lg p-4">
+                    <div className="bg-gray-50 dark:bg-gray-700/30 rounded-lg p-4 border border-gray-300 dark:border-gray-600">
                       <label className="flex items-center gap-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
                         <i className="fas fa-user-tag text-gray-400 text-[10px]"></i>
                         Account Type
@@ -364,8 +351,7 @@ const Profile = () => {
                       </p>
                     </div>
 
-                    {/* Account Created */}
-                    <div className="bg-gray-50 dark:bg-gray-700/30 rounded-lg p-4">
+                    <div className="bg-gray-50 dark:bg-gray-700/30 rounded-lg p-4 border border-gray-300 dark:border-gray-600">
                       <label className="flex items-center gap-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
                         <i className="fas fa-calendar-alt text-gray-400 text-[10px]"></i>
                         Member Since
@@ -394,10 +380,10 @@ const Profile = () => {
                     </div>
                   </div>
 
-                  <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/50 rounded-lg p-4 mb-6">
+                  <div className="bg-amber-200 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/50 rounded-lg p-4 mb-6">
                     <div className="flex items-start gap-3">
-                      <i className="fas fa-info-circle text-amber-600 dark:text-amber-400 mt-0.5 text-sm"></i>
-                      <p className="text-sm text-amber-700 dark:text-amber-300">
+                      <i className="fas fa-info-circle text-amber-600 dark:text-amber-700 mt-0.5 text-sm"></i>
+                      <p className="text-sm text-amber-700 dark:text-amber-700">
                         After changing your password, you will be automatically logged out and need to login again.
                       </p>
                     </div>
