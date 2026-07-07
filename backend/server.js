@@ -67,6 +67,17 @@ app.use("/api/support", supportRoutes);
 app.use('/api/leaves', leaveRoutes);
 app.use('/api/notes', noteRoutes);
 
+app.get("/", (req, res) => {
+  res.send("EduScheduler Backend is Running 🚀");
+});
+
+app.get("/api/health", (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "Backend is healthy"
+  });
+});
+
 app.get("/api/test", (req, res) => {
   res.json({ success: true });
 });
