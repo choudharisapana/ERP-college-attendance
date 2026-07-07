@@ -1,11 +1,9 @@
 module.exports = {
-  // User roles - REMOVE FACULTY
   ROLES: {
     ADMIN: 'admin',
     USER: 'user'
   },
 
-  // Classroom types
   CLASSROOM_TYPES: [
     'Lecture Hall',
     'Seminar Room',
@@ -15,7 +13,6 @@ module.exports = {
     'Conference Room'
   ],
 
-  // Subject types
   SUBJECT_TYPES: [
     'Core',
     'Elective',
@@ -25,7 +22,6 @@ module.exports = {
     'Seminar'
   ],
 
-  // Timetable status
   TIMETABLE_STATUS: {
     DRAFT: 'Draft',
     PENDING_REVIEW: 'Pending Review',
@@ -33,7 +29,6 @@ module.exports = {
     REJECTED: 'Rejected'
   },
 
-  // Days of week
   DAYS: [
     'Monday',
     'Tuesday',
@@ -43,7 +38,6 @@ module.exports = {
     'Saturday'
   ],
 
-  // Time slots
   TIME_SLOTS: [
     '09:00-10:00',
     '10:00-11:00',
@@ -55,7 +49,6 @@ module.exports = {
     '16:00-17:00'
   ],
 
-  // Departments - Add your departments here
   DEPARTMENTS: [
     'Computer Science Engineering',
     'Information Technology',
@@ -68,7 +61,6 @@ module.exports = {
     'Robotics'
   ],
 
-  // Notification types
   NOTIFICATION_TYPES: {
     INFO: 'info',
     WARNING: 'warning',
@@ -78,14 +70,12 @@ module.exports = {
     SYSTEM: 'system'
   },
 
-  // File upload limits
   UPLOAD_LIMITS: {
-    AVATAR: 2 * 1024 * 1024, // 2MB
-    DOCUMENT: 5 * 1024 * 1024, // 5MB
-    IMAGE: 5 * 1024 * 1024 // 5MB
+    AVATAR: 2 * 1024 * 1024, 
+    DOCUMENT: 5 * 1024 * 1024,
+    IMAGE: 5 * 1024 * 1024 
   },
 
-  // Academic years
   ACADEMIC_YEARS: [
     '2023-2024',
     '2024-2025',

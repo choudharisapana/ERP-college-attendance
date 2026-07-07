@@ -1,8 +1,5 @@
 import Notification from "../models/Notification.js";
 
-// @desc    Get all notifications for logged in user
-// @route   GET /api/notifications
-// @access  Private
 export const getNotifications = async (req, res) => {
   try {
     const { page = 1, limit = 20, read = null, type = null } = req.query;
@@ -28,7 +25,7 @@ export const getNotifications = async (req, res) => {
       .skip(skip)
       .limit(parseInt(limit))
       .populate("sender", "name email")
-      .populate("relatedId");
+      .populate("relatedModel");
 
     const total = await Notification.countDocuments(query);
 
@@ -59,9 +56,6 @@ export const getNotifications = async (req, res) => {
   }
 };
 
-// @desc    Get single notification by ID
-// @route   GET /api/notifications/:id
-// @access  Private
 export const getNotificationById = async (req, res) => {
   try {
     const notification = await Notification.findById(req.params.id)
@@ -99,9 +93,6 @@ export const getNotificationById = async (req, res) => {
   }
 };
 
-// @desc    Mark a notification as read
-// @route   PUT /api/notifications/:id/read
-// @access  Private
 export const markAsRead = async (req, res) => {
   try {
     const notification = await Notification.findById(req.params.id);
@@ -129,9 +120,6 @@ export const markAsRead = async (req, res) => {
   }
 };
 
-// @desc    Mark all notifications as read
-// @route   PUT /api/notifications/read-all
-// @access  Private
 export const markAllAsRead = async (req, res) => {
   try {
     await Notification.markAllAsReadForUser(req.user._id);
@@ -149,9 +137,6 @@ export const markAllAsRead = async (req, res) => {
   }
 };
 
-// @desc    Mark multiple notifications as read
-// @route   PUT /api/notifications/read-multiple
-// @access  Private
 export const markMultipleAsRead = async (req, res) => {
   try {
     const { notificationIds } = req.body;
@@ -184,9 +169,6 @@ export const markMultipleAsRead = async (req, res) => {
   }
 };
 
-// @desc    Delete a notification
-// @route   DELETE /api/notifications/:id
-// @access  Private
 export const deleteNotification = async (req, res) => {
   try {
     const notification = await Notification.findById(req.params.id);
@@ -231,9 +213,6 @@ export const deleteNotification = async (req, res) => {
   }
 };
 
-// @desc    Delete all read notifications
-// @route   DELETE /api/notifications/delete-read
-// @access  Private
 export const deleteAllReadNotifications = async (req, res) => {
   try {
     const notifications = await Notification.find({
@@ -265,9 +244,6 @@ export const deleteAllReadNotifications = async (req, res) => {
   }
 };
 
-// @desc    Get unread notification count
-// @route   GET /api/notifications/unread-count
-// @access  Private
 export const getUnreadCount = async (req, res) => {
   try {
     const count = await Notification.countDocuments({
@@ -290,9 +266,6 @@ export const getUnreadCount = async (req, res) => {
   }
 };
 
-// @desc    Get notification statistics
-// @route   GET /api/notifications/stats
-// @access  Private
 export const getNotificationStats = async (req, res) => {
   try {
     const total = await Notification.countDocuments({
@@ -338,9 +311,6 @@ export const getNotificationStats = async (req, res) => {
   }
 };
 
-// @desc    Get notifications by type
-// @route   GET /api/notifications/type/:type
-// @access  Private
 export const getNotificationsByType = async (req, res) => {
   try {
     const { type } = req.params;

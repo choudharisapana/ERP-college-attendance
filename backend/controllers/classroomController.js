@@ -1,7 +1,7 @@
-// backend/controllers/classroomController.js
 import Classroom from "../models/Classroom.js";
+import Notification from "../models/Notification.js";
+import User from "../models/User.js";
 
-// ✅ Get all classrooms
 export const getClassrooms = async (req, res) => {
   try {
     const classrooms = await Classroom.find();
@@ -17,7 +17,6 @@ export const getClassrooms = async (req, res) => {
   }
 };
 
-// ✅ Get classroom by ID
 export const getClassroomById = async (req, res) => {
   try {
     const classroom = await Classroom.findById(req.params.id);
@@ -39,7 +38,6 @@ export const getClassroomById = async (req, res) => {
   }
 };
 
-// ✅ Create classroom
 export const createClassroom = async (req, res) => {
   try {
     const classroomData = {
@@ -48,6 +46,15 @@ export const createClassroom = async (req, res) => {
     };
 
     const classroom = await Classroom.create(classroomData);
+    await createClassroomNotification({
+      classroom,
+      action: "created",
+      senderId: req.user?._id,
+      title: "Classroom Created",
+      message: `Classroom "${classroom.name}" has been created successfully.`,
+      type: "Schedule Change",
+      priority: "High",
+    });
     res.status(201).json({
       success: true,
       data: classroom,
@@ -60,13 +67,12 @@ export const createClassroom = async (req, res) => {
   }
 };
 
-// ✅ Update classroom
 export const updateClassroom = async (req, res) => {
   try {
     const classroom = await Classroom.findByIdAndUpdate(
       req.params.id,
       req.body,
-      { new: true, runValidators: true }
+      { new: true, runValidators: true },
     );
 
     if (!classroom) {
@@ -75,6 +81,16 @@ export const updateClassroom = async (req, res) => {
         message: "Classroom not found",
       });
     }
+
+    await createClassroomNotification({
+      classroom,
+      action: "updated",
+      senderId: req.user?._id,
+      title: "Classroom Updated",
+      message: `Classroom "${classroom.name}" has been updated successfully.`,
+      type: "Schedule Change",
+      priority: "High",
+    });
 
     res.status(200).json({
       success: true,
@@ -88,16 +104,34 @@ export const updateClassroom = async (req, res) => {
   }
 };
 
-// ✅ Delete classroom
 export const deleteClassroom = async (req, res) => {
   try {
-    const classroom = await Classroom.findByIdAndDelete(req.params.id);
+    const classroom = await Classroom.findById(req.params.id);
+
     if (!classroom) {
       return res.status(404).json({
         success: false,
         message: "Classroom not found",
       });
     }
+
+    const classroomName = classroom.name;
+    const classroomId = classroom._id;
+
+    await Classroom.findByIdAndDelete(req.params.id);
+    await createClassroomNotification({
+      classroom: {
+        _id: classroomId,
+        name: classroomName,
+      },
+      action: "deleted",
+      senderId: req.user?._id,
+      title: "Classroom Deleted",
+      message: `Classroom "${classroomName}" has been deleted successfully.`,
+      type: "Schedule Change",
+      priority: "High",
+    });
+
     res.status(200).json({
       success: true,
       message: "Classroom deleted successfully",
@@ -107,5 +141,49 @@ export const deleteClassroom = async (req, res) => {
       success: false,
       message: error.message,
     });
+  }
+};
+
+const createClassroomNotification = async ({
+  classroom,
+  action,
+  senderId,
+  title,
+  message,
+  type,
+  priority,
+}) => {
+  try {
+    const users = await User.find({
+      role: { $in: ["admin", "faculty", "user"] },
+    }).select("_id");
+
+    const recipients = users.map((user) => ({
+      user: user._id,
+      read: false,
+    }));
+
+    if (recipients.length === 0) return;
+
+    const notification = await Notification.create({
+      title,
+      message,
+      type,
+      priority,
+      recipients,
+      sender: senderId,
+      relatedId: classroom._id,
+      relatedModel: "Classroom",
+      relatedEntity: {
+        type: "Classroom",
+        id: classroom._id,
+      },
+      actionUrl: `/classrooms/${classroom._id}`,
+      isActive: true,
+    });
+
+    console.log(`Classroom ${action} notification created:`, notification._id);
+  } catch (error) {
+    console.error("Error creating classroom notification:", error);
   }
 };

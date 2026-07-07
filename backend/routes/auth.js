@@ -1,4 +1,3 @@
-// backend/routes/auth.js
 import express from "express";
 import {
   register,
@@ -21,7 +20,6 @@ router.post("/login", login);
 router.get("/verify-email/:token", verifyEmail);
 router.post("/resend-verification", resendVerificationEmail);
 
-// ✅ Password reset routes
 router.post("/forgot-password", forgotPassword);
 router.post("/reset-password", resetPassword); 
 router.put("/change-password", protect, changePassword);

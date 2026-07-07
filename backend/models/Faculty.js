@@ -51,8 +51,19 @@ const facultySchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
+
+    availability: [
+      {
+        day: String,
+        timeSlot: String,
+        isAvailable: {
+          type: Boolean,
+          default: true,
+        },
+      },
+    ],
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export default mongoose.model("Faculty", facultySchema);

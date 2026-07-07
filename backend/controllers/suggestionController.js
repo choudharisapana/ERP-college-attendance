@@ -4,9 +4,6 @@ import User from "../models/User.js";
 import sendEmail from "../utils/sendEmail.js";
 import getSuggestionEmailTemplate from "../utils/emailTemplates.js";
 
-// @desc    Get all suggestions (Public - all users can see)
-// @route   GET /api/suggestions
-// @access  Public
 export const getSuggestions = async (req, res) => {
   try {
     const {
@@ -18,13 +15,11 @@ export const getSuggestions = async (req, res) => {
       limit = 10,
     } = req.query;
 
-    // Build filter
     const filter = {};
     if (category && category !== "All") filter.category = category;
     if (status && status !== "All") filter.status = status;
     if (priority && priority !== "All") filter.priority = priority;
 
-    // Build sort
     let sortOption = {};
     switch (sort) {
       case "latest":
@@ -40,13 +35,8 @@ export const getSuggestions = async (req, res) => {
         sortOption = { createdAt: -1 };
     }
 
-    // Pagination
     const skip = (parseInt(page) - 1) * parseInt(limit);
-
-    // Get total count
     const total = await Suggestion.countDocuments(filter);
-
-    // Get suggestions
     const suggestions = await Suggestion.find(filter)
       .sort(sortOption)
       .skip(skip)
@@ -54,7 +44,6 @@ export const getSuggestions = async (req, res) => {
       .populate("userId", "name email")
       .lean();
 
-    // Get stats for all suggestions
     const stats = {
       total: await Suggestion.countDocuments(),
       pending: await Suggestion.countDocuments({ status: "Pending" }),
@@ -85,9 +74,6 @@ export const getSuggestions = async (req, res) => {
   }
 };
 
-// @desc    Get single suggestion by ID (Public)
-// @route   GET /api/suggestions/:id
-// @access  Public
 export const getSuggestionById = async (req, res) => {
   try {
     const suggestion = await Suggestion.findById(req.params.id)
@@ -114,13 +100,11 @@ export const getSuggestionById = async (req, res) => {
   }
 };
 
-// @access  Public/Private (anyone can submit)
 export const createSuggestion = async (req, res) => {
   try {
     const { name, email, category, priority, suggestion, isAnonymous, occupation } =
       req.body;
 
-    // Validate required fields
     if (!name || !email || !suggestion) {
       return res.status(400).json({
         success: false,
@@ -128,7 +112,6 @@ export const createSuggestion = async (req, res) => {
       });
     }
 
-    // Create suggestion
     const newSuggestion = await Suggestion.create({
       name: isAnonymous ? "Anonymous" : name,
       email: isAnonymous ? "anonymous@eduscheduler.com" : email,
@@ -140,7 +123,6 @@ export const createSuggestion = async (req, res) => {
       occupation: occupation || "Student",
     });
 
-    // EMAIL NOTIFICATION - Send email to ONLY ONE email
     try {
       const adminEmail =
         process.env.EMAIL_USER || "supporteduschedular@gmail.com";
@@ -156,7 +138,6 @@ export const createSuggestion = async (req, res) => {
 
       await sendEmail(adminEmail, "New Suggestion Received", emailHtml);
 
-      // console.log(`Email sent to: ${adminEmail}`);
     } catch (emailError) {
       console.log("Email notification failed:", emailError.message);
     }
@@ -182,7 +163,6 @@ export const createSuggestion = async (req, res) => {
   }
 };
 
-// @access  Private (requires login)
 export const upvoteSuggestion = async (req, res) => {
   try {
     const suggestion = await Suggestion.findById(req.params.id);
@@ -194,18 +174,15 @@ export const upvoteSuggestion = async (req, res) => {
       });
     }
 
-    // Check if user already upvoted
     const hasUpvoted =
       suggestion.upvotedBy && suggestion.upvotedBy.includes(req.user._id);
 
     if (hasUpvoted) {
-      // Remove upvote
       suggestion.upvotes = (suggestion.upvotes || 0) - 1;
       suggestion.upvotedBy = suggestion.upvotedBy.filter(
         (id) => id.toString() !== req.user._id.toString(),
       );
     } else {
-      // Add upvote
       suggestion.upvotes = (suggestion.upvotes || 0) + 1;
       if (!suggestion.upvotedBy) suggestion.upvotedBy = [];
       suggestion.upvotedBy.push(req.user._id);
@@ -227,14 +204,10 @@ export const upvoteSuggestion = async (req, res) => {
   }
 };
 
-// @desc    Update suggestion status (Admin only)
-// @route   PUT /api/suggestions/:id/status
-// @access  Private/Admin
 export const updateSuggestionStatus = async (req, res) => {
   try {
     const { status, adminResponse } = req.body;
 
-    // Check if user is admin
     if (req.user.role !== "admin") {
       return res.status(403).json({
         success: false,
@@ -257,10 +230,7 @@ export const updateSuggestionStatus = async (req, res) => {
     if (status === "Implemented") suggestion.implementedDate = new Date();
 
     await suggestion.save();
-
-    // NOTIFICATION: Notify the user who submitted the suggestion about status update (IN-APP)
     try {
-      // Don't send notification if status didn't change or no user associated
       if (oldStatus !== status && suggestion.userId) {
         let statusMessage = "";
         switch (status) {
@@ -323,9 +293,6 @@ export const updateSuggestionStatus = async (req, res) => {
   }
 };
 
-// @desc    Get suggestion statistics
-// @route   GET /api/suggestions/stats/overview
-// @access  Public
 export const getSuggestionStats = async (req, res) => {
   try {
     const [
@@ -364,10 +331,8 @@ export const getSuggestionStats = async (req, res) => {
   }
 };
 
-// Admin Notifications (In-app)
 export const getAdminSuggestionNotifications = async (req, res) => {
   try {
-    // Only admin check
     if (req.user.role !== "admin") {
       return res.status(403).json({
         success: false,
@@ -400,7 +365,6 @@ export const getAdminSuggestionNotifications = async (req, res) => {
   }
 };
 
-// User Notifications (In-app)
 export const getUserSuggestionNotifications = async (req, res) => {
   try {
     const notifications = await Notification.find({

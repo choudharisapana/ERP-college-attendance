@@ -1,4 +1,3 @@
-// backend/controllers/authController.js
 import User from "../models/User.js";
 import validator from "validator";
 import crypto from "crypto";
@@ -34,7 +33,6 @@ const tempEmailDomains = [
   'mailnator.com', 'trashmail.com', 'spamgourmet.com'
 ];
 
-// ✅ UPDATED: Register with Faculty Role
 export const register = async (req, res) => {
   try {
     const { name, email, password, role, department, semester, adminKey, facultyKey } = req.body;
@@ -82,7 +80,6 @@ export const register = async (req, res) => {
       });
     }
 
-    // ✅ Updated: Allow admin, user, faculty roles
     if (!["admin", "user", "faculty"].includes(role)) {
       return res.status(400).json({
         success: false,
@@ -94,7 +91,6 @@ export const register = async (req, res) => {
     const FACULTY_SECRET = process.env.FACULTY_SECRET;
     let finalRole = "user";
 
-    // ✅ Admin role check
     if (role === "admin") {
       if (!adminKey || adminKey !== ADMIN_SECRET) {
         return res.status(403).json({
@@ -105,7 +101,6 @@ export const register = async (req, res) => {
       finalRole = "admin";
     }
 
-    // ✅ Faculty role check
     else if (role === "faculty") {
       if (!facultyKey || facultyKey !== FACULTY_SECRET) {
         return res.status(403).json({
@@ -116,12 +111,10 @@ export const register = async (req, res) => {
       finalRole = "faculty";
     }
 
-    // ✅ Student (user) - No key required
     else {
       finalRole = "user";
     }
 
-    // ✅ Department and semester - ONLY for Student
     if (finalRole === "user") {
       if (!department || department === "") {
         return res.status(400).json({
@@ -138,7 +131,6 @@ export const register = async (req, res) => {
       }
     }
 
-    // For admin and faculty, department/semester not required
     const userDepartment = finalRole === "user" ? department : undefined;
     const userSemester = finalRole === "user" ? semester : undefined;
     const normalizedEmail = email.toLowerCase().trim();
@@ -189,7 +181,6 @@ export const register = async (req, res) => {
   }
 };
 
-// ✅ VERIFY EMAIL - Unchanged
 export const verifyEmail = async (req, res) => {
   try {
     const { token } = req.params;
@@ -231,7 +222,6 @@ export const verifyEmail = async (req, res) => {
   }
 };
 
-// ✅ RESEND VERIFICATION - Unchanged
 export const resendVerificationEmail = async (req, res) => {
   try {
     const { email } = req.body;
@@ -282,7 +272,6 @@ export const resendVerificationEmail = async (req, res) => {
   }
 };
 
-// ✅ LOGIN - Unchanged (No email verification check)
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -329,7 +318,7 @@ export const login = async (req, res) => {
 
     sendTokenResponse(user, 200, res);
   } catch (err) {
-    console.error("❌ LOGIN ERROR:", err);
+    console.error("LOGIN ERROR:", err);
     res.status(500).json({
       success: false,
       message: err.message || "Server error",
@@ -337,7 +326,6 @@ export const login = async (req, res) => {
   }
 };
 
-// ✅ GET ME - Unchanged
 export const getMe = async (req, res) => {
   res.status(200).json({
     success: true,
@@ -345,7 +333,6 @@ export const getMe = async (req, res) => {
   });
 };
 
-// ✅ LOGOUT - Unchanged
 export const logout = async (req, res) => {
   res.status(200).json({
     success: true,
@@ -353,7 +340,6 @@ export const logout = async (req, res) => {
   });
 };
 
-// ✅ FORGOT PASSWORD - Unchanged
 export const forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
@@ -395,7 +381,7 @@ export const forgotPassword = async (req, res) => {
       message: "If account exists, reset link sent",
     });
   } catch (error) {
-    console.error("❌ Forgot password error:", error);
+    console.error("Forgot password error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to process request",
@@ -403,7 +389,6 @@ export const forgotPassword = async (req, res) => {
   }
 };
 
-// ✅ RESET PASSWORD - Unchanged
 export const resetPassword = async (req, res) => {
   try {
     const { token, newPassword } = req.body;
@@ -444,7 +429,7 @@ export const resetPassword = async (req, res) => {
       message: "Password reset successfully! You can now login with your new password.",
     });
   } catch (error) {
-    console.error("❌ Reset password error:", error);
+    console.error("Reset password error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to reset password",
@@ -452,12 +437,11 @@ export const resetPassword = async (req, res) => {
   }
 };
 
-// ✅ CHANGE PASSWORD - Unchanged
 export const changePassword = async (req, res) => {
   try {
-    console.log("🔥 CHANGE PASSWORD CONTROLLER HIT");
-    console.log("📝 Request Body:", req.body);
-    console.log("👤 User:", req.user?.email || req.user?.id);
+    console.log("CHANGE PASSWORD CONTROLLER HIT");
+    console.log("Request Body:", req.body);
+    console.log("User:", req.user?.email || req.user?.id);
     const { currentPassword, newPassword } = req.body;
 
     if (!currentPassword || !newPassword) {
@@ -509,7 +493,7 @@ export const changePassword = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("❌ Change password error:", error);
+    console.error("Change password error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to change password",

@@ -1,14 +1,13 @@
-// backend/middleware/auth.js
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 
 export const protect = async (req, res, next) => {
   let token;
 
-  console.log("🔍 AUTH HEADER RECEIVED:", req.headers.authorization);
+  console.log("AUTH HEADER RECEIVED:", req.headers.authorization);
 
   if (!req.headers.authorization) {
-    console.log("❌ No authorization header");
+    console.log("No authorization header");
     return res.status(401).json({
       success: false,
       message: 'Not authorized, no token'
@@ -19,40 +18,36 @@ export const protect = async (req, res, next) => {
     try {
       token = req.headers.authorization.split(' ')[1];
 
-      console.log("🔑 TOKEN AFTER SPLIT:", token ? `${token.substring(0, 20)}...` : 'null');
+      console.log("TOKEN AFTER SPLIT:", token ? `${token.substring(0, 20)}...` : 'null');
 
-      // ✅ Validate token format
       if (!token || token === 'null' || token === 'undefined' || token.trim() === '' || token.length < 10) {
-        console.log("❌ Invalid token format");
+        console.log("Invalid token format");
         return res.status(401).json({
           success: false,
           message: 'Not authorized, invalid token format'
         });
       }
 
-      // ✅ Verify JWT
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      console.log("✅ DECODED TOKEN:", decoded);
+      console.log("DECODED TOKEN:", decoded);
 
-      // ✅ Get user from database
       req.user = await User.findById(decoded.id).select('-password');
 
-      console.log("👤 USER FOUND:", req.user?.email);
+      console.log("USER FOUND:", req.user?.email);
 
       if (!req.user) {
-        console.log("❌ User not found in database");
+        console.log("User not found in database");
         return res.status(401).json({
           success: false,
           message: 'User not found'
         });
       }
 
-      console.log("✅ AUTH SUCCESS");
+      console.log("AUTH SUCCESS");
       next();
     } catch (error) {
-      console.error("❌ JWT ERROR:", error.message);
+      console.error("JWT ERROR:", error.message);
       
-      // ✅ Better error messages
       if (error.name === 'JsonWebTokenError') {
         return res.status(401).json({
           success: false,
@@ -74,7 +69,7 @@ export const protect = async (req, res, next) => {
   }
 
   if (!token) {
-    console.log("❌ No token provided");
+    console.log("No token provided");
     return res.status(401).json({
       success: false,
       message: 'Not authorized, no token'
@@ -82,7 +77,6 @@ export const protect = async (req, res, next) => {
   }
 };
 
-// ✅ ADD THIS - Admin middleware
 export const admin = (req, res, next) => {
   if (req.user && req.user.role === 'admin') {
     next();
@@ -94,7 +88,6 @@ export const admin = (req, res, next) => {
   }
 };
 
-// ✅ ADD THIS - Faculty middleware
 export const faculty = (req, res, next) => {
   if (req.user && (req.user.role === 'faculty' || req.user.role === 'admin')) {
     next();

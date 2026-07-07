@@ -100,23 +100,23 @@ const getSuggestionEmailTemplate = (suggestionData) => {
     <body>
       <div class="container">
         <div class="header">
-          <h1>✨ New Suggestion Received!</h1>
+          <h1>New Suggestion Received!</h1>
           <p>Your input matters - check out this new idea</p>
         </div>
         
         <div class="content">
           <div class="info-row">
-            <div class="info-label">👤 Submitted by:</div>
+            <div class="info-label">Submitted by:</div>
             <div class="info-value"><strong>${suggestionData.userName}</strong></div>
           </div>
           
           <div class="info-row">
-            <div class="info-label">📧 Email:</div>
+            <div class="info-label">Email:</div>
             <div class="info-value">${suggestionData.userEmail}</div>
           </div>
           
           <div class="info-row">
-            <div class="info-label">📂 Category:</div>
+            <div class="info-label">Category:</div>
             <div class="info-value">
               <span class="badge ${suggestionData.category === 'Bug Report' ? 'badge-bug' : 'badge-feature'}">
                 ${suggestionData.category || 'General'}
@@ -125,22 +125,22 @@ const getSuggestionEmailTemplate = (suggestionData) => {
           </div>
           
           <div class="info-row">
-            <div class="info-label">🎯 Priority:</div>
+            <div class="info-label">Priority:</div>
             <div class="info-value"><strong>${suggestionData.priority || 'Medium'}</strong></div>
           </div>
           
           <div class="suggestion-detail">
-            <div class="info-label">💡 Suggestion:</div>
+            <div class="info-label">Suggestion:</div>
             <div class="info-value">${suggestionData.suggestion}</div>
           </div>
           
           <div class="info-row">
-            <div class="info-label">🆔 Suggestion ID:</div>
+            <div class="info-label">Suggestion ID:</div>
             <div class="info-value"><code>${suggestionData.suggestionId || 'N/A'}</code></div>
           </div>
           
           <div class="info-row">
-            <div class="info-label">📅 Submitted on:</div>
+            <div class="info-label">Submitted on:</div>
             <div class="info-value">${new Date().toLocaleString()}</div>
           </div>
           

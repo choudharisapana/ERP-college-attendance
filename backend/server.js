@@ -1,4 +1,3 @@
-
 import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
@@ -16,6 +15,8 @@ import notificationRoutes from './routes/notificationRoutes.js';
 import dashboardRoutes from "./routes/dashboard.js";
 import settingsRoutes from "./routes/settings.js";
 import supportRoutes from "./routes/supportRoutes.js";
+import leaveRoutes from "./routes/leaves.js";
+import noteRoutes from './routes/noteRoutes.js';
 
 dotenv.config({
   path: path.join(process.cwd(), ".env"),
@@ -24,8 +25,9 @@ const app = express();
 
 const allowedOrigins = [
   "http://localhost:5173",
-  process.env.FRONTEND_URL,
-];
+  "https://eduschedular-frontend.onrender.com",
+  process.env.CLIENT_URL,
+].filter(Boolean);
 
 app.use(
   cors({
@@ -62,6 +64,8 @@ app.use('/api/notifications', notificationRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/settings", settingsRoutes);
 app.use("/api/support", supportRoutes);
+app.use('/api/leaves', leaveRoutes);
+app.use('/api/notes', noteRoutes);
 
 app.get("/api/test", (req, res) => {
   res.json({ success: true });

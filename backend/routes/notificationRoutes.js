@@ -15,7 +15,6 @@ import {
 
 const router = express.Router();
 
-// Test route to verify routes are working (no authentication needed)
 router.get("/test", (req, res) => {
   res.json({ 
     success: true, 
@@ -24,22 +23,18 @@ router.get("/test", (req, res) => {
   });
 });
 
-// All notification routes require authentication
 router.use(protect);
 
-// Notification routes
 router.get("/", getNotifications);
 router.get("/stats", getNotificationStats);
 router.get("/unread-count", getUnreadCount);
 router.get("/type/:type", getNotificationsByType);
 router.get("/:id", getNotificationById);
 
-// Update routes
 router.put("/read-all", markAllAsRead);
 router.put("/read-multiple", markMultipleAsRead);
 router.put("/:id/read", markAsRead);
 
-// Delete routes
 router.delete("/delete-read", deleteAllReadNotifications);
 router.delete("/:id", deleteNotification);
 

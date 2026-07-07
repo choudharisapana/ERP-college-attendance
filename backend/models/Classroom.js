@@ -1,4 +1,3 @@
-// models/Classroom.js
 import mongoose from "mongoose";
 
 const classroomSchema = new mongoose.Schema(
@@ -37,13 +36,11 @@ const classroomSchema = new mongoose.Schema(
       enum: ['Available', 'In Use', 'Under Maintenance'],
       default: 'Available',
     },
-    // AUTO-GENERATED CODE FIELD
     code: {
       type: String,
       unique: true,
       required: true,
       default: function() {
-        // Auto-generate code: Building initial + Random number
         const buildingCode = this.building ? this.building.substring(0, 3).toUpperCase() : 'GEN';
         const randomNum = Math.floor(Math.random() * 1000);
         return `${buildingCode}-${Date.now().toString().slice(-4)}-${randomNum}`;

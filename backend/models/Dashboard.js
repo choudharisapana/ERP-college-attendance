@@ -1,10 +1,8 @@
 import mongoose from "mongoose";
 
 const dashboardSchema = new mongoose.Schema({
-  // This is a singleton model - only one document will exist
   _id: { type: String, default: 'dashboard' },
   
-  // Statistics (auto-updated via aggregation)
   stats: {
     totalBatches: { type: Number, default: 0 },
     activeBatches: { type: Number, default: 0 },
@@ -17,7 +15,6 @@ const dashboardSchema = new mongoose.Schema({
     publishedTimetables: { type: Number, default: 0 }
   },
 
-  // Charts data - Fixed schema definitions
   charts: {
     batchesByDepartment: [{
       department: { type: String },
@@ -38,7 +35,7 @@ const dashboardSchema = new mongoose.Schema({
     }],
     
     classroomsByType: [{
-      type: { type: String },  // ✅ FIXED: Properly define as object, not string
+      type: { type: String },
       count: { type: Number, default: 0 },
       totalCapacity: { type: Number, default: 0 }
     }],
@@ -56,7 +53,6 @@ const dashboardSchema = new mongoose.Schema({
     }]
   },
 
-  // Recent activities
   recentActivities: [{
     type: { 
       type: String, 
@@ -90,7 +86,6 @@ const dashboardSchema = new mongoose.Schema({
     }
   }],
 
-  // Upcoming events
   upcomingEvents: [{
     title: {
       type: String,
@@ -112,7 +107,6 @@ const dashboardSchema = new mongoose.Schema({
     }
   }],
 
-  // Resource utilization
   resourceUtilization: {
     classrooms: [{
       building: { type: String },
@@ -128,7 +122,6 @@ const dashboardSchema = new mongoose.Schema({
     }]
   },
 
-  // AUTO-GENERATED CODE FIELD
   code: {
     type: String,
     unique: true,
@@ -147,7 +140,6 @@ const dashboardSchema = new mongoose.Schema({
   _id: false 
 });
 
-// Ensure only one document exists
 dashboardSchema.statics.ensureDashboard = async function() {
   const dashboard = await this.findById('dashboard');
   if (!dashboard) {
@@ -156,13 +148,11 @@ dashboardSchema.statics.ensureDashboard = async function() {
   return dashboard;
 };
 
-// Method to update statistics
 dashboardSchema.methods.updateStats = async function() {
   this.lastUpdated = new Date();
   return this.save();
 };
 
-// Index for better performance
 dashboardSchema.index({ lastUpdated: -1 });
 
 const Dashboard = mongoose.model('Dashboard', dashboardSchema);

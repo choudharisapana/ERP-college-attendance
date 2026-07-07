@@ -33,7 +33,6 @@ const studentBatchSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
-    // ✅ Current semester field add करें
     currentSemester: {
       type: Number,
       default: 1,

@@ -12,7 +12,6 @@ const handleValidationErrors = (req, res, next) => {
   next();
 };
 
-// User validation rules
 const validateUser = [
   body('email').isEmail().normalizeEmail(),
   body('password').isLength({ min: 6 }),
@@ -20,7 +19,6 @@ const validateUser = [
   handleValidationErrors
 ];
 
-// Classroom validation rules
 const validateClassroom = [
   body('code').notEmpty().trim(),
   body('name').notEmpty().trim(),
@@ -30,7 +28,6 @@ const validateClassroom = [
   handleValidationErrors
 ];
 
-// Faculty validation rules
 const validateFaculty = [
   body('name').notEmpty().trim(),
   body('email').isEmail().normalizeEmail(),
@@ -39,7 +36,6 @@ const validateFaculty = [
   handleValidationErrors
 ];
 
-// Subject validation rules
 const validateSubject = [
   body('name').notEmpty().trim(),
   body('code').notEmpty().trim(),
@@ -49,7 +45,6 @@ const validateSubject = [
   handleValidationErrors
 ];
 
-// Batch validation rules
 const validateBatch = [
   body('name').notEmpty().trim(),
   body('code').notEmpty().trim(),

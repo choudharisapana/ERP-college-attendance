@@ -1,4 +1,3 @@
-// backend/models/User.js
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
@@ -45,7 +44,6 @@ const userSchema = new mongoose.Schema(
     verificationTokenExpiry: {
       type: Date,
     },
-    // ✅ NEW: Forgot password fields
     resetPasswordToken: {
       type: String,
     },
@@ -61,7 +59,6 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-// Hash password before saving
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) {
     return next();
@@ -71,12 +68,10 @@ userSchema.pre("save", async function (next) {
   next();
 });
 
-// Compare password
 userSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
-// Generate JWT Token
 userSchema.methods.getSignedJwtToken = function () {
   return jwt.sign(
     { id: this._id, role: this.role },

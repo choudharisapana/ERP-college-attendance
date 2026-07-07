@@ -76,7 +76,6 @@ const suggestionSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
-// Index for better query performance
 suggestionSchema.index({ category: 1, status: 1, createdAt: -1 });
 
 const Suggestion = mongoose.model("Suggestion", suggestionSchema);

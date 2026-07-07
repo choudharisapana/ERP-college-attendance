@@ -8,8 +8,6 @@ import Timetable from "../models/Timetable.js";
 
 export const getDashboardStats = async (req, res) => {
   try {
-    // console.log('Fetching dashboard stats...');
-
     await Dashboard.ensureDashboard();
 
     const [
@@ -29,9 +27,7 @@ export const getDashboardStats = async (req, res) => {
       getRecentActivities(),
       getAllChartData(),
     ]);
-
-    // console.log('Timetable Stats:', timetableStats);
-    // console.log('Timetable Chart Data:', chartData.timetablesByStatus);
+    console.log('Timetable Chart Data:', chartData.timetablesByStatus);
 
     const dashboard = await Dashboard.findByIdAndUpdate(
       "dashboard",
@@ -69,28 +65,7 @@ export const getDashboardStats = async (req, res) => {
 };
 
 export const getDashboard = async (req, res) => {
-  try {
-    let dashboard = await Dashboard.findById("dashboard");
-
-    if (
-      !dashboard ||
-      Date.now() - new Date(dashboard.lastUpdated).getTime() > 5 * 60 * 1000
-    ) {
-      return getDashboardStats(req, res);
-    }
-
-    res.status(200).json({
-      success: true,
-      data: dashboard,
-    });
-  } catch (error) {
-    console.error("Dashboard fetch error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Error fetching dashboard",
-      error: error.message,
-    });
-  }
+  return getDashboardStats(req, res);
 };
 
 export const refreshDashboard = async (req, res) => {
@@ -178,12 +153,10 @@ const getTimetableStatistics = async () => {
       } else if (status === "archived") {
         archivedTimetables++;
       } else {
-        // Agar koi status nahi hai ya kuch aur hai, toh active consider karo
         activeTimetables++;
       }
     });
 
-    // toh saare timetables ko active consider karo
     if (
       totalTimetables > 0 &&
       activeTimetables === 0 &&
@@ -348,20 +321,15 @@ const getClassroomsByType = async () => {
   }
 };
 
-// 🔥 FIXED: Timetable status ko properly map karo
 const getTimetablesByStatus = async () => {
   try {
     const timetables = await Timetable.find();
 
-    // console.log('All timetables from DB:', timetables.map(t => ({ id: t._id, name: t.name, status: t.status })));
-
-    // Agar koi timetable nahi hai
     if (timetables.length === 0) {
       console.log("No timetables found");
       return [];
     }
 
-    // Status ke according group karo
     const statusCount = {
       Active: 0,
       Draft: 0,
@@ -371,12 +339,10 @@ const getTimetablesByStatus = async () => {
     timetables.forEach((timetable) => {
       let status = timetable.status;
 
-      // Agar status null/undefined/empty hai toh 'Active' consider karo
       if (!status || status === "") {
         status = "Active";
       }
 
-      // Normalize status
       if (
         status.toLowerCase() === "active" ||
         status.toLowerCase() === "published"
@@ -387,19 +353,16 @@ const getTimetablesByStatus = async () => {
       } else if (status.toLowerCase() === "archived") {
         statusCount["Archived"]++;
       } else {
-        // Koi aur status hai toh bhi 'Active' mein daalo
         statusCount["Active"]++;
       }
     });
 
-    // Convert to array format
     const result = [
       { status: "Active", count: statusCount["Active"] },
       { status: "Draft", count: statusCount["Draft"] },
       { status: "Archived", count: statusCount["Archived"] },
-    ].filter((item) => item.count > 0); // Sirf wahi status dikhao jinka count > 0 hai
+    ].filter((item) => item.count > 0); 
 
-    // console.log('Timetables by status result:', result);
     return result;
   } catch (error) {
     console.error("Error in getTimetablesByStatus:", error);
@@ -501,7 +464,7 @@ const getRecentActivities = async () => {
 
     recentBatches.forEach((b) => {
       activities.push({
-        type: "batch",
+        type: "Studentbatch",
         action: "created",
         itemId: b._id,
         itemName: b.name,

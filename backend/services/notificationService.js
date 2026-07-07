@@ -3,7 +3,6 @@ const User = require('../models/User');
 const emailService = require('./emailService');
 
 class NotificationService {
-  // Send timetable-related notifications
   async sendTimetableNotification(timetable, action, recipients) {
     const messages = {
       created: 'New timetable has been created and requires your review',
@@ -26,7 +25,6 @@ class NotificationService {
         actionUrl: `/timetables/${timetable._id}`
       });
 
-      // Send email notification if user has email notifications enabled
       const user = await User.findById(userId);
       if (user.preferences.notifications.email) {
         await this.sendEmailNotification(user, notification);
@@ -34,7 +32,6 @@ class NotificationService {
     }
   }
 
-  // Send faculty-related notifications
   async sendFacultyNotification(faculty, action, additionalData = {}) {
     const recipients = await this.getAdminUsers();
     
@@ -53,7 +50,6 @@ class NotificationService {
     }
   }
 
-  // Send system-wide notifications
   async sendSystemNotification(title, message, priority = 'medium') {
     const users = await User.find({ isActive: true });
     
@@ -65,17 +61,15 @@ class NotificationService {
         type: 'system',
         category: 'system',
         priority,
-        expiryDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days
+        expiryDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
       });
     }
   }
 
-  // Get admin users for notifications
   async getAdminUsers() {
     return await User.find({ role: 'admin', isActive: true });
   }
 
-  // Send email notification
   async sendEmailNotification(user, notification) {
     const emailTemplate = `
       <h2>${notification.title}</h2>

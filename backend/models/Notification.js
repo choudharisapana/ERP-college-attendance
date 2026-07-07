@@ -38,24 +38,27 @@ const notificationSchema = new mongoose.Schema({
     ref: 'User',
     required: false
   },
+  
   relatedEntity: {
     type: {
       type: String,
-      enum: ['Timetable', 'Classroom', 'Faculty', 'Subject', 'Batch', 'Report', 'Suggestion']
+      enum: ['Timetable', 'Classroom', 'Faculty', 'Subject', 'StudentBatch', 'Report', 'Suggestion']
     },
     id: mongoose.Schema.Types.ObjectId
   },
+  
   actionUrl: String,
   expiresAt: Date,
   isActive: {
     type: Boolean,
     default: true
   },
-  // Additional fields for suggestion system
+  
   category: {
     type: String,
     default: 'general'
   },
+  
   relatedId: {
     type: mongoose.Schema.Types.ObjectId,
     refPath: 'relatedModel',
@@ -63,19 +66,17 @@ const notificationSchema = new mongoose.Schema({
   },
   relatedModel: {
     type: String,
-    enum: ['Suggestion', 'User', 'Course', 'Assignment', null],
+    enum: ['Suggestion', 'User', 'Course', 'Assignment', 'Faculty', 'Timetable', 'Subject', 'Classroom', 'StudentBatch', null],
     default: null
   }
 }, {
   timestamps: true
 });
 
-// Index for efficient querying
 notificationSchema.index({ 'recipients.user': 1, 'recipients.read': 1 });
 notificationSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 notificationSchema.index({ createdAt: -1 });
 
-// Helper method to mark notification as read for a specific user
 notificationSchema.methods.markAsReadForUser = async function(userId) {
   const recipient = this.recipients.find(r => r.user.toString() === userId.toString());
   if (recipient && !recipient.read) {
@@ -86,7 +87,6 @@ notificationSchema.methods.markAsReadForUser = async function(userId) {
   return this;
 };
 
-// Static method to get unread notifications for a user
 notificationSchema.statics.getUnreadForUser = async function(userId) {
   return this.find({
     'recipients.user': userId,
@@ -99,7 +99,6 @@ notificationSchema.statics.getUnreadForUser = async function(userId) {
   }).sort({ createdAt: -1 });
 };
 
-// Static method to get all notifications for a user (with pagination)
 notificationSchema.statics.getForUser = async function(userId, page = 1, limit = 20) {
   const skip = (page - 1) * limit;
   
@@ -148,7 +147,6 @@ notificationSchema.statics.getForUser = async function(userId, page = 1, limit =
   };
 };
 
-// Static method to create a suggestion notification for admins
 notificationSchema.statics.createForAdmins = async function(suggestionData, adminUsers, senderId) {
   if (!adminUsers || adminUsers.length === 0) return [];
   
@@ -175,7 +173,6 @@ notificationSchema.statics.createForAdmins = async function(suggestionData, admi
   return this.insertMany(notifications);
 };
 
-// Static method to create a status update notification for user
 notificationSchema.statics.createForUser = async function(userId, suggestion, status, adminResponse, senderId) {
   if (!userId) return null;
   
@@ -219,7 +216,6 @@ notificationSchema.statics.createForUser = async function(userId, suggestion, st
   return notification.save();
 };
 
-// Static method to mark all notifications as read for a user
 notificationSchema.statics.markAllAsReadForUser = async function(userId) {
   return this.updateMany(
     {
@@ -235,7 +231,6 @@ notificationSchema.statics.markAllAsReadForUser = async function(userId) {
   );
 };
 
-// Static method to delete old notifications
 notificationSchema.statics.deleteOldNotifications = async function(daysOld = 30) {
   const cutoffDate = new Date();
   cutoffDate.setDate(cutoffDate.getDate() - daysOld);

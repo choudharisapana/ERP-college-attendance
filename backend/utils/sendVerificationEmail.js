@@ -1,4 +1,3 @@
-// backend/utils/sendVerificationEmail.js
 import transporter from "../config/emailConfig.js";
 
 export const sendVerificationEmail = async (user, verificationLink) => {
@@ -31,7 +30,7 @@ export const sendVerificationEmail = async (user, verificationLink) => {
                 ${verificationLink}
               </p>
               
-              <p><strong>⚠️ Note:</strong> This link will expire in 24 hours.</p>
+              <p><strong>Note:</strong> This link will expire in 24 hours.</p>
               
               <hr style="margin: 20px 0;">
               <p style="font-size: 12px; color: #777;">

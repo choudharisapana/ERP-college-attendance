@@ -1,4 +1,3 @@
-// backend/routes/subjects.js
 import express from "express";
 import { protect, admin } from "../middleware/auth.js";
 import {
@@ -11,13 +10,17 @@ import {
 } from "../controllers/subjectController.js";
 
 const router = express.Router();
+router.use((req, res, next) => {
+  console.log("SUBJECT ROUTE HIT:", req.method, req.originalUrl);
+  next();
+});
+router.get("/test", (req, res) => {
+  res.json({ message: "Subject route working" });
+});
 
-// ✅ Faculty - Only their subjects
-router.get("/subjects", protect, getMySubjects);
-
-// ✅ Admin - All subjects (CRUD)
 router.get("/", protect, getSubjects);
-router.get("/:id", protect,  getSubjectById);
+router.get("/:id", protect, getSubjectById);
+
 router.post("/", protect, admin, createSubject);
 router.put("/:id", protect, admin, updateSubject);
 router.delete("/:id", protect, admin, deleteSubject);

@@ -1,6 +1,5 @@
 const timetableGenerator = require('./services/timetableGenerator');
 
-// Generate timetable
 const timetable = await timetableGenerator.generateAutomaticTimetable({
   department: 'Computer Science',
   academicYear: '2024-2025',
@@ -12,8 +11,8 @@ const timetable = await timetableGenerator.generateAutomaticTimetable({
   }
 });
 
-// Validate timetable
 const validation = timetableGenerator.validateTimetable(timetable);
-
-// Export to CSV
 const csv = timetableGenerator.exportTimetable(timetable, 'csv');
+
+
+

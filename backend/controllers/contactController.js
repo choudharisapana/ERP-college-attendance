@@ -1,17 +1,10 @@
-// controllers/contactController.js
 import SupportTicket from "../models/SupportTicket.js";
 import emailService from "../services/emailService.js";
 
-/**
- * @desc    Create a new support ticket
- * @route   POST /api/support/tickets
- * @access  Public
- */
 export const createSupportTicket = async (req, res) => {
   try {
     const { name, email, subject, message, urgencyLevel } = req.body;
 
-    // Validation
     if (!name || !email || !subject || !message) {
       console.log("Validation failed: Missing fields");
       return res.status(400).json({
@@ -20,7 +13,6 @@ export const createSupportTicket = async (req, res) => {
       });
     }
 
-    // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return res.status(400).json({
@@ -29,7 +21,6 @@ export const createSupportTicket = async (req, res) => {
       });
     }
 
-    // Create ticket
     const ticket = new SupportTicket({
       name,
       email,
@@ -41,14 +32,12 @@ export const createSupportTicket = async (req, res) => {
     await ticket.save();
     console.log("Ticket created:", ticket.ticketNumber);
 
-    // Send emails (don't fail if email fails)
     const emailResults = {
       userConfirmation: false,
       adminNotification: false
     };
 
     try {
-      // 1. Send confirmation to USER (who submitted the ticket)
       const userResult = await emailService.sendSupportConfirmation(ticket);
       emailResults.userConfirmation = userResult.success;
       console.log(`User confirmation email sent to ${ticket.email}:`, userResult.success);
@@ -57,7 +46,6 @@ export const createSupportTicket = async (req, res) => {
     }
 
     try {
-      // 2. Send notification to ADMIN
       const adminResult = await emailService.sendSupportNotification(ticket);
       emailResults.adminNotification = adminResult.success;
       console.log("Admin notification email sent:", adminResult.success);
@@ -76,7 +64,7 @@ export const createSupportTicket = async (req, res) => {
       emailStatus: emailResults
     });
   } catch (error) {
-    console.error("❌ Error creating support ticket:", error);
+    console.error("Error creating support ticket:", error);
     res.status(500).json({
       success: false,
       message: error.message || "Failed to create support ticket",
@@ -84,11 +72,6 @@ export const createSupportTicket = async (req, res) => {
   }
 };
 
-/**
- * @desc    Get ticket status by ticket number
- * @route   GET /api/support/tickets/:ticketNumber
- * @access  Public
- */
 export const getTicketStatus = async (req, res) => {
   try {
     const { ticketNumber } = req.params;
@@ -128,11 +111,6 @@ export const getTicketStatus = async (req, res) => {
   }
 };
 
-/**
- * @desc    Get all tickets (Admin only)
- * @route   GET /api/support/tickets
- * @access  Private/Admin
- */
 export const getAllTickets = async (req, res) => {
   try {
     const { status, page = 1, limit = 10 } = req.query;
@@ -170,11 +148,6 @@ export const getAllTickets = async (req, res) => {
   }
 };
 
-/**
- * @desc    Update ticket status (Admin only)
- * @route   PUT /api/support/tickets/:ticketNumber/status
- * @access  Private/Admin
- */
 export const updateTicketStatus = async (req, res) => {
   try {
     const { ticketNumber } = req.params;
@@ -199,14 +172,12 @@ export const updateTicketStatus = async (req, res) => {
 
     ticket.status = status;
     
-    // If admin adds a response, you might want to store it
     if (response) {
       ticket.adminResponse = response;
     }
 
     await ticket.save();
 
-    // Optionally send email notification about status update
     if (status === "resolved" || status === "closed") {
       try {
         await emailService.sendTicketStatusUpdate(ticket);
@@ -233,11 +204,6 @@ export const updateTicketStatus = async (req, res) => {
   }
 };
 
-/**
- * @desc    Delete a ticket (Admin only)
- * @route   DELETE /api/support/tickets/:ticketNumber
- * @access  Private/Admin
- */
 export const deleteTicket = async (req, res) => {
   try {
     const { ticketNumber } = req.params;
@@ -264,11 +230,6 @@ export const deleteTicket = async (req, res) => {
   }
 };
 
-/**
- * @desc    Get tickets by email (User can check their tickets)
- * @route   GET /api/support/my-tickets
- * @access  Public
- */
 export const getTicketsByEmail = async (req, res) => {
   try {
     const { email } = req.query;

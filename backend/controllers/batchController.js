@@ -1,80 +1,71 @@
-// backend/controllers/batchController.js
 import StudentBatch from "../models/StudentBatch.js";
+import Notification from "../models/Notification.js";
+import User from "../models/User.js";
 
 export const getAllBatches = async (req, res) => {
   try {
     let filter = {};
-
-    // ✅ STUDENT FILTER - Safe parsing
     if (req.user?.role === "user") {
-
       let semesterNumber = null;
-
-      if (req.user.semester !== undefined && req.user.semester !== null && req.user.semester !== "") {
-        // Case 1: Already a number
+      if (
+        req.user.semester !== undefined &&
+        req.user.semester !== null &&
+        req.user.semester !== ""
+      ) {
         if (typeof req.user.semester === "number") {
           semesterNumber = req.user.semester;
-        }
-        // Case 2: String with "Semester 1" format
-        else if (typeof req.user.semester === "string") {
-          // "Semester 1" se number nikalna
+        } else if (typeof req.user.semester === "string") {
           const match = req.user.semester.match(/\d+/);
           if (match) {
             semesterNumber = parseInt(match[0]);
           } else if (!isNaN(parseInt(req.user.semester))) {
-            // Direct number string "3"
             semesterNumber = parseInt(req.user.semester);
           }
         }
       }
 
-      console.log("🔢 Parsed Semester:", semesterNumber);
+      console.log("Parsed Semester:", semesterNumber);
 
-      // ✅ Agar semester number valid hai toh filter lagao
-      if (semesterNumber && !isNaN(semesterNumber) && semesterNumber > 0 && semesterNumber <= 8) {
+      if (
+        semesterNumber &&
+        !isNaN(semesterNumber) &&
+        semesterNumber > 0 &&
+        semesterNumber <= 8
+      ) {
         filter = {
           department: req.user.department,
           currentSemester: semesterNumber,
         };
-        console.log("✅ Filter applied:", filter);
+        console.log("Filter applied:", filter);
       } else {
-        console.log("⚠️ Invalid semester, returning empty");
+        console.log("Invalid semester, returning empty");
         return res.status(200).json({
           success: true,
           data: [],
-          message: "Please update your semester in profile"
+          message: "Please update your semester in profile",
         });
       }
-    }
-
-    // ✅ FACULTY FILTER
-  
-else if (req.user?.role === "faculty") {
-  // temporary fix
-  filter = {};
-}
-
-
-    // ✅ ADMIN - No filter
-    else if (req.user?.role === "admin") {
+    } else if (req.user?.role === "faculty") {
+      filter = {};
+    } else if (req.user?.role === "admin") {
       filter = {};
     }
 
-    console.log("🔍 Final Filter:", filter);
+    console.log("Final Filter:", filter);
 
     const batches = await StudentBatch.find(filter).populate({
       path: "semesters.subjects.subject",
       model: "Subject",
     });
 
-    console.log("📦 Found Batches:", batches.length);
+    console.log("Found Batches:", batches.length);
 
     res.status(200).json({
       success: true,
       data: batches,
     });
   } catch (error) {
-    console.error("❌ Error:", error);
+    console.error("Error:", error);
     res.status(500).json({
       success: false,
       message: error.message,
@@ -110,7 +101,6 @@ export const createBatch = async (req, res) => {
   try {
     const { currentSemester = 1, ...batchData } = req.body;
 
-    // Generate default semesters
     const semesters = Array.from({ length: 8 }, (_, i) => ({
       semesterNumber: i + 1,
       subjects: [],
@@ -125,6 +115,15 @@ export const createBatch = async (req, res) => {
 
     const batch = new StudentBatch(newBatchData);
     await batch.save();
+    await createBatchNotification({
+      batch,
+      action: "created",
+      senderId: req.user?._id,
+      title: "Batch Created",
+      message: `Batch "${batch.name}" has been created successfully.`,
+      type: "Schedule Change",
+      priority: "High",
+    });
 
     res.status(201).json({
       success: true,
@@ -152,7 +151,15 @@ export const updateBatch = async (req, res) => {
         message: "Batch not found",
       });
     }
-
+    await createBatchNotification({
+      batch,
+      action: "updated",
+      senderId: req.user?._id,
+      title: "Batch Updated",
+      message: `Batch "${batch.name}" has been updated successfully.`,
+      type: "Schedule Change",
+      priority: "High",
+    });
     res.status(200).json({
       success: true,
       data: batch,
@@ -167,13 +174,31 @@ export const updateBatch = async (req, res) => {
 
 export const deleteBatch = async (req, res) => {
   try {
-    const batch = await StudentBatch.findByIdAndDelete(req.params.id);
+    const batch = await StudentBatch.findById(req.params.id);
+
     if (!batch) {
       return res.status(404).json({
         success: false,
         message: "Batch not found",
       });
     }
+
+    const batchName = batch.name;
+    const batchId = batch._id;
+
+    await StudentBatch.findByIdAndDelete(req.params.id);
+    await createBatchNotification({
+      batch: {
+        _id: batchId,
+        name: batchName,
+      },
+      action: "deleted",
+      senderId: req.user?._id,
+      title: "Batch Deleted",
+      message: `Batch "${batchName}" has been deleted successfully.`,
+      type: "Schedule Change",
+      priority: "High",
+    });
 
     res.status(200).json({
       success: true,
@@ -330,4 +355,46 @@ export const getSemesterSubjects = async (req, res) => {
   }
 };
 
+const createBatchNotification = async ({
+  batch,
+  action,
+  senderId,
+  title,
+  message,
+  type,
+  priority,
+}) => {
+  try {
+    const users = await User.find({
+      role: { $in: ["admin", "faculty", "user"] },
+    }).select("_id");
 
+    const recipients = users.map((user) => ({
+      user: user._id,
+      read: false,
+    }));
+
+    if (recipients.length === 0) return;
+
+    const notification = await Notification.create({
+      title,
+      message,
+      type,
+      priority,
+      recipients,
+      sender: senderId,
+      relatedId: batch._id,
+      relatedModel: "StudentBatch",
+      relatedEntity: {
+        type: "StudentBatch",
+        id: batch._id,
+      },
+      actionUrl: `/batches/${batch._id}`,
+      isActive: true,
+    });
+
+    console.log(`Batch ${action} notification created:`, notification._id);
+  } catch (error) {
+    console.error("Error creating batch notification:", error);
+  }
+};

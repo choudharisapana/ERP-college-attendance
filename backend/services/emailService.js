@@ -5,7 +5,7 @@ export const sendAdminNotification = async (suggestionData) => {
   try {
     const mailOptions = {
       from: process.env.EMAIL_USER,
-      to: "supporteduschedular@gmail.com", // Sirf ye email
+      to: "supporteduschedular@gmail.com",
       subject: `New Suggestion: ${suggestionData.category || "General"} - ${new Date().toLocaleDateString()}`,
       html: getSuggestionEmailTemplate(suggestionData),
     };
@@ -37,12 +37,11 @@ export const sendBulkEmail = async (emails, subject, message) => {
   }
 };
 
-// Send confirmation to USER (who submitted the ticket)
 export const sendSupportConfirmation = async (ticket) => {
   try {
     const mailOptions = {
       from: `"EduScheduler Support" <${process.env.EMAIL_USER}>`,
-      to: ticket.email, // User ko confirmation
+      to: ticket.email,
       subject: `Support Ticket Confirmation - ${ticket.ticketNumber}`,
       html: `
         <div style="font-family: Arial, sans-serif; background: #f4f6f8; padding: 20px;">
@@ -81,18 +80,17 @@ export const sendSupportConfirmation = async (ticket) => {
   }
 };
 
-// Send notification to ADMIN (sirf supporteduschedular@gmail.com)
 export const sendSupportNotification = async (ticket) => {
   try {
     const mailOptions = {
       from: `"EduScheduler Support" <${process.env.EMAIL_USER}>`,
-      to: "supporteduschedular@gmail.com", // Sirf ye email - swejaltembhare044@gmail.com hata diya
+      to: "supporteduschedular@gmail.com",
       subject: `NEW SUPPORT TICKET: ${ticket.ticketNumber} - ${ticket.subject}`,
       html: `
         <div style="font-family: Arial, sans-serif; background: #f4f6f8; padding: 20px;">
           <div style="max-width: 600px; margin: auto; background: #ffffff; border-radius: 10px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
             <div style="background: #FF5722; color: white; padding: 15px; text-align: center;">
-              <h2>⚠️ New Support Ticket Received</h2>
+              <h2>New Support Ticket Received</h2>
             </div>
             <div style="padding: 20px; color: #333;">
               <div style="background: #FFF3E0; padding: 10px; border-left: 4px solid #FF5722; margin-bottom: 15px;">
