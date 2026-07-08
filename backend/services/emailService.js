@@ -14,7 +14,7 @@ export const sendAdminNotification = async (suggestionData) => {
     console.log("Email sent: ", info.messageId);
     return { success: true, messageId: info.messageId };
   } catch (error) {
-    console.error("Error sending email: ", error);
+    console.error("Error sending email: ", error.message);
     return { success: false, error: error.message };
   }
 };
@@ -31,7 +31,14 @@ export const sendBulkEmail = async (emails, subject, message) => {
       `,
     };
 
-    await transporter.sendMail(mailOptions);
+    const info = await transporter.sendMail(mailOptions);
+
+console.log("Bulk email sent:", info.messageId);
+
+return {
+    success: true,
+    messageId: info.messageId,
+};
   } catch (error) {
     console.log("Email error:", error);
   }

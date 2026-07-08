@@ -21,9 +21,15 @@ export const sendResetEmail = async (user, resetLink) => {
       `,
     };
 
-    await transporter.sendMail(mailOptions);
-    console.log(`Reset email sent to ${user.email}`);
-    return { success: true };
+    const info = await transporter.sendMail(mailOptions);
+
+console.log(`✅ Reset email sent to ${user.email}`);
+console.log("Message ID:", info.messageId);
+
+return {
+  success: true,
+  messageId: info.messageId,
+};
   } catch (error) {
     console.error("Reset email error:", error);
     return { success: false, error: error.message };

@@ -158,20 +158,26 @@ export const register = async (req, res) => {
       verificationTokenExpiry: verificationTokenExpiry,
     });
 
-    try {
-      const verificationLink = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/verify-email?token=${verificationToken}`;
-      await sendVerificationEmail(user, verificationLink);
-      console.log(`Verification email sent to ${user.email}`);
-    } catch (emailError) {
-      console.error("Failed to send verification email:", emailError);
-    }
+   const verificationLink =
+  `${process.env.FRONTEND_URL || process.env.CLIENT_URL || "http://localhost:5173"}/verify-email?token=${verificationToken}`;
 
-    res.status(201).json({
-      success: true,
-      message: "Registration successful! Please check your email to verify your account.",
-      requiresVerification: true,
-      email: user.email,
-    });
+// Response immediately
+res.status(201).json({
+  success: true,
+  message:
+    "Registration successful! Verification email will be sent shortly.",
+  requiresVerification: true,
+  email: user.email,
+});
+
+// Send email in background
+sendVerificationEmail(user, verificationLink)
+  .then(() => {
+    console.log(`✅ Verification email sent to ${user.email}`);
+  })
+  .catch((err) => {
+    console.error("❌ Verification email failed:", err.message);
+  });
   } catch (err) {
     console.error("REGISTER ERROR:", err);
     res.status(500).json({
@@ -257,7 +263,15 @@ export const resendVerificationEmail = async (req, res) => {
     await user.save();
 
     const verificationLink = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/verify-email?token=${verificationToken}`;
-    await sendVerificationEmail(user, verificationLink);
+    
+sendVerificationEmail(user, verificationLink)
+  .then(() => {
+    console.log(`✅ Verification email resent to ${user.email}`);
+  })
+  .catch((err) => {
+    console.error("❌ Resend email failed:", err.message);
+  });
+
 
     res.json({
       success: true,
@@ -370,16 +384,18 @@ export const forgotPassword = async (req, res) => {
 
     const resetLink = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/reset-password?token=${resetToken}`;
     
-    try {
-      await sendResetEmail(user, resetLink);
-    } catch (emailError) {
-      console.error("Failed to send reset email:", emailError);
-    }
-
     res.status(200).json({
-      success: true,
-      message: "If account exists, reset link sent",
-    });
+  success: true,
+  message: "If account exists, reset link will be sent shortly.",
+});
+
+sendResetEmail(user, resetLink)
+  .then(() => {
+    console.log(`Reset email sent to ${user.email}`);
+  })
+  .catch((err) => {
+    console.error("Reset email failed:", err.message);
+  });
   } catch (error) {
     console.error("Forgot password error:", error);
     res.status(500).json({
