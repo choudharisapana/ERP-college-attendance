@@ -1,4 +1,4 @@
-import transporter from "../config/emailConfig.js";
+import { sendBrevoMail } from "../utils/brevoMail.js";
 import getSuggestionEmailTemplate from "../utils/emailTemplates.js";
 
 export const sendAdminNotification = async (suggestionData) => {
@@ -10,8 +10,12 @@ export const sendAdminNotification = async (suggestionData) => {
       html: getSuggestionEmailTemplate(suggestionData),
     };
 
-    const info = await transporter.sendMail(mailOptions);
-    console.log("Email sent: ", info.messageId);
+const info = await sendBrevoMail({
+  to: mailOptions.to,
+  name: "User",
+  subject: mailOptions.subject,
+  html: mailOptions.html,
+});    console.log("Email sent: ", info.messageId);
     return { success: true, messageId: info.messageId };
   } catch (error) {
     console.error("Error sending email: ", error.message);
@@ -31,8 +35,12 @@ export const sendBulkEmail = async (emails, subject, message) => {
       `,
     };
 
-    const info = await transporter.sendMail(mailOptions);
-
+const info = await sendBrevoMail({
+  to: mailOptions.to,
+  name: "User",
+  subject: mailOptions.subject,
+  html: mailOptions.html,
+});
 console.log("Bulk email sent:", info.messageId);
 
 return {
@@ -78,8 +86,12 @@ export const sendSupportConfirmation = async (ticket) => {
       `,
     };
 
-    const info = await transporter.sendMail(mailOptions);
-    console.log(`Support confirmation sent to ${ticket.email}:`, info.messageId);
+const info = await sendBrevoMail({
+  to: mailOptions.to,
+  name: "User",
+  subject: mailOptions.subject,
+  html: mailOptions.html,
+});    console.log(`Support confirmation sent to ${ticket.email}:`, info.messageId);
     return { success: true, messageId: info.messageId };
   } catch (error) {
     console.error("Support confirmation error:", error);
@@ -139,8 +151,12 @@ export const sendSupportNotification = async (ticket) => {
       `,
     };
 
-    const info = await transporter.sendMail(mailOptions);
-    console.log(`Admin notification sent to supporteduschedular@gmail.com:`, info.messageId);
+const info = await sendBrevoMail({
+  to: mailOptions.to,
+  name: "User",
+  subject: mailOptions.subject,
+  html: mailOptions.html,
+});    console.log(`Admin notification sent to supporteduschedular@gmail.com:`, info.messageId);
     return { success: true, messageId: info.messageId };
   } catch (error) {
     console.error("Support notification error:", error);
