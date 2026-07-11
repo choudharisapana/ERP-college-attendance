@@ -164,13 +164,13 @@ BREVO_SENDER_EMAIL=your_email
 <img width="1888" height="914" alt="EduSchedular Dashboard" src="https://github.com/user-attachments/assets/89345939-f710-4ba5-8956-70aa06d44c72" />
 
 
-### 📅 Timetable Management
+### 📅 StudentBatch Management
 
 <img width="1894" height="926" alt="image" src="https://github.com/user-attachments/assets/b9b400bc-6b5e-45b9-a3dd-d5ce31e8a629" />
 
 
 
-### 📚 Subject Management
+### 📅 Timetable Management
 
 <img width="1883" height="910" alt="image" src="https://github.com/user-attachments/assets/1d70a616-740e-4a3f-9f0f-dce4aeed0585" />
 
