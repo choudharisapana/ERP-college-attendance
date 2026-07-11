@@ -16,24 +16,29 @@
 
 EduSchedular is a Full-Stack MERN application developed to simplify academic scheduling and institutional management. The platform helps colleges efficiently manage timetables, faculty, subjects, classrooms, student batches, and administrative activities through a centralized digital system.
 
-The application reduces manual scheduling efforts, improves organization, and provides a modern dashboard for administrators.
+The application reduces scheduling efforts, improves organization, and provides a modern dashboard for administrators.
 
 ---
 
 ## ✨ Key Features
 
-- 🔐 Secure Admin Authentication
-- 📅 Timetable Management
-- 👨‍🏫 Faculty Management
-- 📚 Subject Management
-- 🏫 Classroom Management
-- 👨‍🎓 Student Batch Management
-- 📊 Interactive Dashboard
-- 📈 Analytics & Recent Activities
-- 🔍 Search & Filter Functionality
-- ⚡ REST API Integration
-- 📱 Fully Responsive Design (Mobile, Tablet & Desktop)
-- 🎨 Modern User Interface
+-  Secure Admin Authentication
+-  Timetable Management
+-  Faculty Management
+-  Subject Management
+-  Classroom Management
+-  Student Batch Management
+-  Interactive Dashboard
+-  Analytics & Recent Activities
+-  Search & Filter Functionality
+-  REST API Integration
+-  Fully Responsive Design (Mobile, Tablet & Desktop)
+-  Modern User Interface
+-  PDF Timetable Export
+-  Email Notifications
+-  Dark Mode
+-  Real-time Notifications
+-  Multi-role Authentication
 
 ---
 
@@ -42,7 +47,7 @@ The application reduces manual scheduling efforts, improves organization, and pr
 | Category | Technologies |
 |----------|--------------|
 | Frontend | React.js, Vite, Tailwind CSS |
-| Backend | Node.js, Express.js |
+| Backend  | Node.js, Express.js |
 | Database | MongoDB, Mongoose |
 | Authentication | JWT |
 | Tools | Git, GitHub, Postman, VS Code |
@@ -175,7 +180,7 @@ BREVO_SENDER_EMAIL=your_email
 
 **Frontend:** https://erp-college-attendance.vercel.app
 
-**Backend API:** https://erp-college-attendance.onrender.com/api
+**Backend API:** https://erp-college-attendance.onrender.com
 
 ---
 
